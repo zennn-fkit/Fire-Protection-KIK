@@ -18,6 +18,19 @@ const modalVariants = {
   },
 };
 
+/**
+ * Komponen modal dialog konfirmasi untuk mereset meteran energi (energy offset).
+ * 
+ * @component
+ * @param {object} props
+ * @param {boolean} props.isOpen - Menentukan apakah modal terbuka/terlihat.
+ * @param {Function} props.onClose - Fungsi callback saat modal ditutup (batal).
+ * @param {Function} props.onConfirm - Fungsi callback saat konfirmasi reset dilakukan. Menerima objek `{ current_kwh, note }`.
+ * @param {number} [props.currentKwh=0] - Nilai akumulasi pemakaian energi total saat ini dari sensor.
+ * @param {number} [props.energyOffset=0] - Nilai offset/offset energi saat ini dari SensorContext.
+ * @param {string|null} [props.lastResetDate=null] - String format ISO tanggal/waktu reset terakhir kali dilakukan.
+ * @param {boolean} [props.loading=false] - State memuat (pending) saat aksi reset API sedang berlangsung.
+ */
 export default function EnergyResetModal({
   isOpen,
   onClose,
@@ -26,12 +39,13 @@ export default function EnergyResetModal({
   energyOffset = 0,
   lastResetDate = null,
   loading = false,
+  error = null,
 }) {
   const [note, setNote] = useState('');
   const periodKwh = (currentKwh - energyOffset).toFixed(2);
 
   const handleConfirm = () => {
-    onConfirm({ current_kwh: currentKwh, note: note.trim() || null });
+    onConfirm({ note: note.trim() || null });
   };
 
   const formatDate = (dateStr) => {
@@ -51,13 +65,7 @@ export default function EnergyResetModal({
           animate="visible"
           exit="hidden"
           onClick={onClose}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-          }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md"
         >
           <motion.div
             variants={modalVariants}
@@ -65,64 +73,52 @@ export default function EnergyResetModal({
             animate="visible"
             exit="exit"
             onClick={e => e.stopPropagation()}
-            style={{
-              width: '100%', maxWidth: 420,
-              background: 'linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97))',
-              border: '1px solid rgba(99,102,241,0.25)',
-              borderRadius: 20,
-              padding: '28px 28px 24px',
-              boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(99,102,241,0.1)',
-            }}
+            className="w-full max-w-[420px] bg-gradient-to-br from-[#0f172a]/97 to-[#1e293b]/97 border border-indigo-500/25 rounded-[20px] p-6 shrink-0 max-h-[90vh] overflow-y-auto shadow-[0_25px_60px_rgba(0,0,0,0.5),0_0_40px_rgba(99,102,241,0.1)]"
           >
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: 12,
-                background: 'linear-gradient(135deg, #f59e0b, #f97316)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 20, boxShadow: '0 4px 15px rgba(245,158,11,0.3)',
-              }}>⚡</div>
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-xl shadow-[0_4px_15px_rgba(245,158,11,0.3)]">
+                ⚡
+              </div>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc' }}>Reset Energy Meter</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>Mulai tracking pemakaian baru</div>
+                <div className="text-base font-extrabold text-slate-50">Reset Energy Meter</div>
+                <div className="text-[11px] text-slate-400">Mulai tracking pemakaian baru</div>
               </div>
             </div>
 
+            {/* Error Alert Box */}
+            {error && (
+              <div className="p-2.5 px-3.5 rounded-lg bg-red-500/8 border border-red-500/25 mb-3 flex items-start gap-2 animate-scale-in">
+                <span className="text-sm leading-none">❌</span>
+                <div className="text-[11px] text-red-400 leading-normal">
+                  {error}
+                </div>
+              </div>
+            )}
+
             {/* Info Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+            <div className="flex flex-col gap-2 mb-3">
               {/* Pemakaian Periode */}
-              <div style={{
-                padding: '14px 16px', borderRadius: 14,
-                background: 'linear-gradient(135deg, rgba(249,115,22,0.12), rgba(245,158,11,0.08))',
-                border: '1px solid rgba(249,115,22,0.2)',
-              }}>
-                <div style={{ fontSize: 10, color: '#fb923c', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>
+              <div className="p-3.5 px-4 rounded-[14px] bg-gradient-to-br from-orange-500/12 to-amber-500/8 border border-orange-500/20">
+                <div className="text-[10px] text-orange-400 font-bold tracking-wider uppercase mb-1">
                   Pemakaian Periode Ini
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 800, color: '#f97316', fontFamily: "'Inter', sans-serif" }}>
-                  {periodKwh} <span style={{ fontSize: 13, fontWeight: 600, color: '#fb923c' }}>kWh</span>
+                <div className="text-[26px] font-extrabold text-orange-500 font-sans">
+                  {periodKwh} <span className="text-[13px] font-semibold text-orange-400">kWh</span>
                 </div>
               </div>
 
               {/* Detail Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <div style={{
-                  padding: '10px 12px', borderRadius: 12,
-                  background: 'rgba(51,65,85,0.4)',
-                  border: '1px solid rgba(71,85,105,0.3)',
-                }}>
-                  <div style={{ fontSize: 9, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: 3 }}>Total Sensor</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#e2e8f0' }}>
-                    {Number(currentKwh).toFixed(2)} <span style={{ fontSize: 10, color: '#94a3b8' }}>kWh</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 px-3 rounded-xl bg-slate-700/40 border border-slate-600/30">
+                  <div className="text-[9px] text-slate-500 font-semibold uppercase mb-0.5">Total Sensor</div>
+                  <div className="text-[15px] font-bold text-slate-200">
+                    {Number(currentKwh).toFixed(2)} <span className="text-[10px] text-slate-400">kWh</span>
                   </div>
                 </div>
-                <div style={{
-                  padding: '10px 12px', borderRadius: 12,
-                  background: 'rgba(51,65,85,0.4)',
-                  border: '1px solid rgba(71,85,105,0.3)',
-                }}>
-                  <div style={{ fontSize: 9, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: 3 }}>Reset Terakhir</div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#e2e8f0', lineHeight: 1.4 }}>
+                <div className="p-2.5 px-3 rounded-xl bg-slate-700/40 border border-slate-600/30">
+                  <div className="text-[9px] text-slate-500 font-semibold uppercase mb-0.5">Reset Terakhir</div>
+                  <div className="text-[11px] font-semibold text-slate-200 leading-normal">
                     {formatDate(lastResetDate)}
                   </div>
                 </div>
@@ -130,9 +126,9 @@ export default function EnergyResetModal({
             </div>
 
             {/* Note Input */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                📝 Catatan (opsional)
+            <div className="mb-3.5">
+              <label className="text-[11px] text-slate-400 font-semibold block mb-1.5">
+                Catatan (opsional)
               </label>
               <input
                 type="text"
@@ -140,78 +136,40 @@ export default function EnergyResetModal({
                 onChange={e => setNote(e.target.value)}
                 placeholder="Contoh: Mei 2026"
                 maxLength={100}
-                style={{
-                  width: '100%', padding: '10px 14px', borderRadius: 10,
-                  background: 'rgba(30,41,59,0.8)',
-                  border: '1px solid rgba(71,85,105,0.5)',
-                  color: '#f8fafc', fontSize: 13,
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box',
-                }}
-                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.6)'}
-                onBlur={e => e.target.style.borderColor = 'rgba(71,85,105,0.5)'}
+                className="w-full p-2.5 px-3.5 rounded-lg bg-slate-800/80 border border-slate-600/50 text-slate-50 text-[13px] focus:border-indigo-500/60 outline-none transition-colors duration-200 box-border"
+                disabled={loading}
               />
             </div>
 
             {/* Warning */}
-            <div style={{
-              padding: '10px 14px', borderRadius: 10,
-              background: 'rgba(245,158,11,0.08)',
-              border: '1px solid rgba(245,158,11,0.15)',
-              marginBottom: 20,
-              display: 'flex', alignItems: 'flex-start', gap: 8,
-            }}>
-              <span style={{ fontSize: 14, lineHeight: 1 }}>ℹ️</span>
-              <div style={{ fontSize: 11, color: '#fbbf24', lineHeight: 1.5 }}>
+            <div className="p-2.5 px-3.5 rounded-lg bg-amber-500/8 border border-amber-500/15 mb-4 flex items-start gap-2">
+              <span className="text-sm leading-none">ℹ️</span>
+              <div className="text-[11px] text-amber-400 leading-normal">
                 Gauge akan kembali ke <strong>0 kWh</strong>. Data historis sensor tetap tersimpan di database.
               </div>
             </div>
 
             {/* Buttons */}
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <div className="flex gap-2.5 justify-end">
               <button
                 onClick={onClose}
                 disabled={loading}
-                style={{
-                  padding: '10px 20px', borderRadius: 10,
-                  background: 'rgba(51,65,85,0.5)',
-                  border: '1px solid rgba(71,85,105,0.4)',
-                  color: '#94a3b8', fontSize: 13, fontWeight: 600,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => { if (!loading) { e.target.style.background = 'rgba(51,65,85,0.8)'; e.target.style.color = '#e2e8f0'; }}}
-                onMouseLeave={e => { e.target.style.background = 'rgba(51,65,85,0.5)'; e.target.style.color = '#94a3b8'; }}
+                className="p-2.5 px-5 rounded-lg bg-slate-700/50 border border-slate-600/40 text-slate-400 text-[13px] font-semibold transition-all duration-200 hover:bg-slate-700/80 hover:text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Batal
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={loading}
-                style={{
-                  padding: '10px 24px', borderRadius: 10,
-                  background: loading
-                    ? 'rgba(249,115,22,0.4)'
-                    : 'linear-gradient(135deg, #f97316, #f59e0b)',
-                  border: 'none',
-                  color: '#fff', fontSize: 13, fontWeight: 700,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  boxShadow: loading ? 'none' : '0 4px 15px rgba(249,115,22,0.3)',
-                  transition: 'all 0.2s',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                }}
-                onMouseEnter={e => { if (!loading) e.target.style.boxShadow = '0 6px 20px rgba(249,115,22,0.5)'; }}
-                onMouseLeave={e => { if (!loading) e.target.style.boxShadow = '0 4px 15px rgba(249,115,22,0.3)'; }}
+                className={`p-2.5 px-6 rounded-lg text-white text-[13px] font-bold transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  loading
+                    ? 'bg-orange-500/40 shadow-none cursor-not-allowed'
+                    : 'bg-gradient-to-br from-orange-500 to-amber-500 shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.5)]'
+                }`}
               >
                 {loading ? (
                   <>
-                    <span style={{
-                      width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)',
-                      borderTopColor: '#fff', borderRadius: '50%',
-                      display: 'inline-block',
-                      animation: 'spin 0.8s linear infinite',
-                    }} />
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full display-inline-block animate-spin" />
                     Mereset...
                   </>
                 ) : (
@@ -222,12 +180,6 @@ export default function EnergyResetModal({
           </motion.div>
         </motion.div>
       )}
-
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </AnimatePresence>
   );
 }

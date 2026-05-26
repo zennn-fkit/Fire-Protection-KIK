@@ -17,6 +17,23 @@ function arcD(r, startDeg, endDeg) {
   return `M ${sx} ${sy} A ${r} ${r} 0 ${large} 1 ${ex} ${ey}`;
 }
 
+/**
+ * Komponen kartu presentasi visual pengukur radial (Gauge Card).
+ * 
+ * @component
+ * @param {object} props
+ * @param {string} props.label - Nama atau judul data sensor (misal: "Tegangan").
+ * @param {number} props.value - Nilai aktual sensor yang diukur.
+ * @param {string|number} [props.displayValue] - Nilai yang diformat khusus untuk ditampilkan di dalam gauge.
+ * @param {number} [props.min=0] - Nilai minimum skala gauge.
+ * @param {number} [props.max=100] - Nilai maksimum skala gauge.
+ * @param {string} props.unit - Satuan metrik sensor (misal: "Volt AC", "kWh").
+ * @param {string} [props.threshKey] - Kunci pencocokan batas toleransi bahaya di file thresholds.js.
+ * @param {number} [props.decimals=1] - Jumlah desimal pembulatan angka display.
+ * @param {boolean} [props.showReset=false] - Menampilkan tombol reset di bagian bawah (khusus meteran energi).
+ * @param {Function} [props.onReset] - Fungsi callback saat tombol reset diklik.
+ * @param {React.ComponentType} [props.icon] - Ikon dari lucide-react untuk dipasang di judul kartu.
+ */
 export default function GaugeCard({
   label, value, displayValue, min = 0, max = 100, unit,
   threshKey, decimals = 1,

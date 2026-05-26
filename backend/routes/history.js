@@ -8,7 +8,8 @@ const AVG_COLUMNS = `
   AVG(current_amp) as current_amp,
   AVG(frequency) as frequency,
   AVG(power_kw) as power_kw,
-  AVG(energy_kwh) as energy_kwh,
+  (MAX(CASE WHEN energy_kwh > 0 AND energy_kwh < 100000 THEN energy_kwh END) -
+   MIN(CASE WHEN energy_kwh > 0 AND energy_kwh < 100000 THEN energy_kwh END)) as energy_kwh,
   AVG(temperature) as temperature,
   AVG(humidity) as humidity,
   AVG(pressure) as pressure,
@@ -82,7 +83,12 @@ router.get('/', async (req, res) => {
     );
 
     const [rows] = await pool.execute(
-      `SELECT * FROM sensor_readings ${where} ORDER BY timestamp DESC LIMIT ? OFFSET ?`,
+      `SELECT
+        id, timestamp, node_id, voltage, current_amp, frequency, power_kw,
+        (energy_kwh - COALESCE((SELECT offset_kwh FROM energy_reset WHERE reset_at <= sensor_readings.timestamp ORDER BY reset_at DESC LIMIT 1), 0)) as energy_kwh,
+        temperature, humidity, pressure, water_pressure, co2_ppm, thermal_temp, uv_value,
+        smoke_status, flame_status, heat_status, thermal_status, water_level, valve_status
+      FROM sensor_readings ${where} ORDER BY timestamp DESC LIMIT ? OFFSET ?`,
       [...params, String(limit), String(offset)]
     );
 
@@ -187,7 +193,12 @@ router.get('/export', async (req, res) => {
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const [rows] = await pool.execute(
-      `SELECT * FROM sensor_readings ${where} ORDER BY timestamp DESC LIMIT 5000`,
+      `SELECT
+        id, timestamp, node_id, voltage, current_amp, frequency, power_kw,
+        (energy_kwh - COALESCE((SELECT offset_kwh FROM energy_reset WHERE reset_at <= sensor_readings.timestamp ORDER BY reset_at DESC LIMIT 1), 0)) as energy_kwh,
+        temperature, humidity, pressure, water_pressure, co2_ppm, thermal_temp, uv_value,
+        smoke_status, flame_status, heat_status, thermal_status, water_level, valve_status
+      FROM sensor_readings ${where} ORDER BY timestamp DESC LIMIT 5000`,
       params
     );
 

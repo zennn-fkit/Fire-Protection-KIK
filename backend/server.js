@@ -109,6 +109,9 @@ mqttClient.on('connect', () => {
 });
 
 // ── Cache Data Sensor ──────────────────────────────────────────
+const MAX_BUFFER_SIZE = 10000;
+let insertBuffer = [];
+
 let latestSensorData = {
   ac_voltage: null,
   current_amp: null,
@@ -215,22 +218,22 @@ mqttClient.on('message', async (topic, message) => {
   };
 
   try {
-    const [result] = await pool.execute(
-      `INSERT INTO sensor_readings
-       (node_id, voltage, current_amp, frequency, power_kw, energy_kwh, temperature, humidity,
-        pressure, water_pressure, co2_ppm, thermal_temp, uv_value, smoke_status, flame_status, heat_status, thermal_status, water_level, valve_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        nodeId,
-        final_voltage, current_amp ?? null, frequency ?? null, final_power_kw,
-        energy_kwh ?? null, final_temp, humidity ?? null,
-        final_pressure, water_pressure ?? null,
-        final_co2, final_thermal, final_uv,
-        effectiveSmokeStatus, effectiveFlameStatus, effectiveHeatStatus, effectiveThermalStatus,
-        water_level ?? null, final_valve ?? 'CLOSED'
-      ]
-    );
-    dbResult = result;
+    const rowData = [
+      nodeId,
+      final_voltage, current_amp ?? null, frequency ?? null, final_power_kw,
+      energy_kwh ?? null, final_temp, humidity ?? null,
+      final_pressure, water_pressure ?? null,
+      final_co2, final_thermal, final_uv,
+      effectiveSmokeStatus, effectiveFlameStatus, effectiveHeatStatus, effectiveThermalStatus,
+      water_level ?? null, final_valve ?? 'CLOSED'
+    ];
+
+    if (insertBuffer.length < MAX_BUFFER_SIZE) {
+      insertBuffer.push(rowData);
+    } else {
+      insertBuffer.shift();
+      insertBuffer.push(rowData);
+    }
 
     const [states] = await pool.execute('SELECT device, status FROM actuator_state');
     const currentStates = Object.fromEntries(states.map(s => [s.device, s.status]));
@@ -305,6 +308,28 @@ mqttClient.on('message', async (topic, message) => {
   });
 });
 
+// ── Batch Insert Interval ──────────────────────────────────────
+setInterval(async () => {
+  if (insertBuffer.length === 0) return;
+  
+  const batch = insertBuffer.splice(0, insertBuffer.length);
+  
+  try {
+    await pool.query(
+      `INSERT INTO sensor_readings
+       (node_id, voltage, current_amp, frequency, power_kw, energy_kwh, temperature, humidity,
+        pressure, water_pressure, co2_ppm, thermal_temp, uv_value, smoke_status, flame_status, heat_status, thermal_status, water_level, valve_status)
+       VALUES ?`,
+      [batch]
+    );
+  } catch (error) {
+    console.error('⚠️ Batch insert error:', error.message);
+    const availableSpace = Math.max(0, MAX_BUFFER_SIZE - insertBuffer.length);
+    const retryBatch = batch.slice(-availableSpace);
+    if (retryBatch.length > 0) insertBuffer.unshift(...retryBatch);
+  }
+}, 1000);
+
 // ── Middleware ────────────────────────────────────────────────
 app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
 app.use(express.json());
@@ -344,6 +369,29 @@ cron.schedule('0 0 * * *', async () => {
     console.log(`🕛 [CRON] water_usage snapshot: ${today} → ${volume} m³ (level: ${waterLevelCm?.toFixed(1)} cm)`);
   } catch (err) {
     console.error('🕛 [CRON] water_usage error:', err.message);
+  }
+}, { timezone: 'Asia/Jakarta' });
+
+// ── Cron Job: Auto Partitioning setiap tanggal 25 ───────────
+cron.schedule('0 1 25 * *', async () => {
+  try {
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    const month = String(nextMonth.getMonth() + 1).padStart(2, '0');
+    const year = nextMonth.getFullYear();
+    const partitionName = `p${year}${month}`;
+    
+    const limitDate = new Date(year, nextMonth.getMonth() + 1, 1);
+    const limitDateStr = limitDate.toISOString().slice(0, 10);
+    
+    await pool.query(
+      `ALTER TABLE sensor_readings ADD PARTITION (PARTITION ${partitionName} VALUES LESS THAN (TO_DAYS('${limitDateStr}')))`
+    );
+    console.log(`🕛 [CRON] Created new partition: ${partitionName}`);
+  } catch (err) {
+    if (err.code !== 'ER_SAME_NAME_PARTITION') {
+      console.error('🕛 [CRON] Partitioning error:', err.message);
+    }
   }
 }, { timezone: 'Asia/Jakarta' });
 
