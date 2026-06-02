@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Monitoring from './pages/Monitoring';
 import History from './pages/History';
 import Control from './pages/Control';
+import SensorManagement from './pages/SensorManagement';
 
 // Inner app: connects socket + mock ticker
 function InnerApp() {
@@ -56,6 +57,7 @@ function InnerApp() {
             <Route path="/monitoring" element={isWaitingForData ? loadingElement : <Monitoring />} />
             <Route path="/history" element={<History />} />
             <Route path="/control" element={isWaitingForData ? loadingElement : <Control />} />
+            <Route path="/sensors" element={<SensorManagement />} />
           </Routes>
         </LayoutGroup>
       </main>

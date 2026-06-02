@@ -14,6 +14,7 @@ import alertRoutes     from './routes/alerts.js';
 import controlRoutes   from './routes/control.js';
 import energyResetRoutes from './routes/energyReset.js';
 import waterUsageRoutes, { calcVolume } from './routes/waterUsage.js';
+import sensorsMasterRoutes from './routes/sensorsMaster.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -342,6 +343,7 @@ app.use('/api/alerts',      alertRoutes);
 app.use('/api/control',     controlRoutes);
 app.use('/api/water-usage', waterUsageRoutes);
 app.use('/api/energy-reset', energyResetRoutes);
+app.use('/api/sensors-master', sensorsMasterRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'OK', time: new Date() }));

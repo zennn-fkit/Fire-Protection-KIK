@@ -1,7 +1,7 @@
 import { Droplets, Waves, Gauge } from 'lucide-react';
 import Wave from 'react-wavify';
 
-export default function WaterTankPanel({ level = 78, pressure = 0, distanceCm = 0 }) {
+export default function WaterTankPanel({ level = 78, pressure = 0, distanceCm = 0, isReady = true }) {
   const levelColor   = level < 10 ? '#ef4444' : level < 20 ? '#f59e0b' : '#3b82f6';
   const clampedLevel = Math.max(0, Math.min(100, level));
   const statusLabel  = level < 10 ? 'KRITIS' : level < 20 ? 'RENDAH' : 'NORMAL';
@@ -11,7 +11,25 @@ export default function WaterTankPanel({ level = 78, pressure = 0, distanceCm = 
   const TANK_H = 120;
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '12px 16px', minHeight: 180 }}>
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '12px 16px', minHeight: 180, position: 'relative' }}>
+      {!isReady && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 50,
+          background: 'rgba(10, 22, 40, 0.6)',
+          backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: 'inherit'
+        }}>
+          <div style={{
+            padding: '8px 16px', borderRadius: 999, border: '1px solid rgba(245, 158, 11, 0.4)',
+            background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b',
+            fontSize: 12, fontWeight: 800, letterSpacing: '0.05em',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+          }}>
+            BELUM READY
+          </div>
+        </div>
+      )}
       {/* Title */}
       <div style={{ fontSize: 10, fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
         💧 Water Tank Monitoring

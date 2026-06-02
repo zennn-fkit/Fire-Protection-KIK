@@ -39,10 +39,12 @@ export default function GaugeCard({
   threshKey, decimals = 1,
   showReset = false, onReset,
   icon: Icon,
+  blockedMessage,
 }) {
   const [hovered, setHovered] = useState(false);
   const status = threshKey ? getStatus(threshKey, value) : 'normal';
-  const sc = STATUS_COLORS[status];
+  const baseSc = STATUS_COLORS[status] || STATUS_COLORS.normal || { stroke: '#3b82f6', bg: 'rgba(59,130,246,0.1)', label: 'NORMAL' };
+  const sc = blockedMessage ? { stroke: '#475569', bg: 'rgba(71, 85, 105, 0.12)', label: 'BLOCKED' } : baseSc;
   const pct = Math.max(0, Math.min(1, (value - min) / (max - min)));
   const id = `gauge-${(label + unit).replace(/[^a-zA-Z0-9]/g, '')}`;
 
@@ -68,6 +70,7 @@ export default function GaugeCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -82,6 +85,25 @@ export default function GaugeCard({
         } : {})
       }}
     >
+      {blockedMessage && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 50,
+          background: 'rgba(10, 22, 40, 0.6)',
+          backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: 'inherit'
+        }}>
+          <div style={{
+            padding: '8px 16px', borderRadius: 999, border: '1px solid rgba(245, 158, 11, 0.4)',
+            background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b',
+            fontSize: 10, fontWeight: 800, letterSpacing: '0.05em',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            textAlign: 'center'
+          }}>
+            {blockedMessage}
+          </div>
+        </div>
+      )}
       {/* Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
         {Icon && <Icon size={14} color={sc.stroke} style={{ opacity: 0.9 }} />}

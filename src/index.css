@@ -556,3 +556,614 @@ body {
   .history-table-scroll { overflow-x: auto !important; }
   .history-table { min-width: 720px; }
 }
+
+/* Monitoring Product Trial */
+.monitoring-page {
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 20px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.monitoring-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.monitoring-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.monitoring-tab {
+  height: 44px;
+  border: 1px solid #243f68;
+  border-radius: 8px;
+  background: rgba(13, 31, 56, 0.52);
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 auto;
+  min-width: max-content;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  transition: border-color 160ms ease-out, color 160ms ease-out, background 160ms ease-out;
+}
+
+.monitoring-tab:hover,
+.monitoring-tab.active {
+  border-color: #3b82f6;
+  color: #f8fafc;
+  background: rgba(59, 130, 246, 0.14);
+}
+
+.tab-danger-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  animation: tab-danger-pulse 1.5s ease-in-out infinite;
+  margin-left: auto;
+}
+
+@keyframes tab-danger-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+  50% { opacity: 0.6; transform: scale(1.3); box-shadow: 0 0 16px rgba(239, 68, 68, 0.9); }
+}
+
+.monitoring-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.monitoring-section-header h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.monitoring-eyebrow {
+  margin-bottom: 4px;
+  color: #60a5fa;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.monitoring-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.monitoring-summary.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.monitoring-status-card,
+.monitoring-detector-card {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.monitoring-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.monitoring-card-icon,
+.monitoring-detector-icon,
+.monitoring-note-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.monitoring-card-title {
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.monitoring-card-value {
+  margin-top: 6px;
+  color: #f8fafc;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 25px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.monitoring-card-value span {
+  margin-left: 5px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.monitoring-card-note,
+.monitoring-muted-panel p,
+.monitoring-building-note p {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.monitoring-main-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1.1fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.monitoring-muted-panel,
+.monitoring-building-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+}
+
+.monitoring-gauge-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.monitoring-meter-needs-ct {
+  position: relative;
+}
+
+.monitoring-meter-needs-ct > span {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
+.monitoring-building-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.monitoring-detector-card {
+  min-height: 170px;
+  align-items: flex-start;
+}
+
+.monitoring-detector-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.monitoring-detector-state {
+  margin-top: 8px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.monitoring-note-icon {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.12);
+}
+
+@media (max-width: 1180px) {
+  .monitoring-summary,
+  .monitoring-gauge-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .monitoring-main-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .monitoring-page {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .monitoring-tabs,
+  .monitoring-summary,
+  .monitoring-summary.compact,
+  .monitoring-gauge-grid,
+  .monitoring-building-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .monitoring-tab {
+    justify-content: flex-start;
+    padding: 0 14px;
+  }
+
+  .monitoring-section-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .monitoring-section-header h2 {
+    font-size: 18px;
+  }
+
+  .monitoring-meter-needs-ct > span {
+    position: static;
+    margin-top: 8px;
+  }
+}
+
+/* ─── Sensor Management ───────────────────────────────────── */
+.sensor-page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 28px 32px;
+}
+
+/* ── Form Card ──────────────────────────────────────────────── */
+.sensor-form-card {
+  background: linear-gradient(145deg, #1a2744 0%, #131d35 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 14px;
+  padding: 0;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(99, 102, 241, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.sensor-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  background: rgba(99, 102, 241, 0.06);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.sensor-form-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sensor-form-title h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+}
+
+.sensor-form-icon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(99, 102, 241, 0.14);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.sensor-form-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sensor-form-close:hover {
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+}
+
+.sensor-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 24px;
+}
+
+.sensor-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sensor-form-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sensor-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #2d3f65;
+  color: #e2e8f0;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.sensor-input::placeholder {
+  color: #475569;
+}
+
+.sensor-input:hover {
+  border-color: #374878;
+}
+
+.sensor-input:focus {
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.sensor-select-wrapper {
+  position: relative;
+}
+
+.sensor-select {
+  appearance: none;
+  padding-right: 36px;
+}
+
+.sensor-select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.sensor-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid rgba(45, 63, 101, 0.35);
+}
+
+.sensor-btn-cancel {
+  padding: 9px 20px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px solid #2d3f65;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sensor-btn-cancel:hover {
+  border-color: #475569;
+  color: #e2e8f0;
+  background: rgba(45, 63, 101, 0.2);
+}
+
+.sensor-btn-submit {
+  padding: 9px 22px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+/* ── Data Panel ─────────────────────────────────────────────── */
+.sensor-panel {
+  background: linear-gradient(145deg, #1a2744 0%, #131d35 100%);
+  border: 1px solid #2d3f65;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.sensor-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 26px;
+  background: rgba(19, 29, 53, 0.6);
+  border-bottom: 1px solid rgba(45, 63, 101, 0.5);
+}
+
+.sensor-panel-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sensor-panel-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.sensor-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.14);
+  color: #10B981;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.sensor-panel-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.sensor-add-btn {
+  padding: 10px 20px;
+  border-radius: 9px;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sensor-panel-body {
+  background: rgba(15, 23, 42, 0.25);
+}
+
+/* ── Empty State ────────────────────────────────────────────── */
+.sensor-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.sensor-empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.04));
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6366F1;
+  margin-bottom: 24px;
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.08);
+}
+
+.sensor-empty-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: -0.01em;
+}
+
+.sensor-empty-desc {
+  margin: 0 0 28px;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.65;
+}
+
+.sensor-empty-btn {
+  padding: 11px 24px;
+  border-radius: 10px;
+  font-size: 13px;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+}
+
+.sensor-empty-btn:hover {
+  box-shadow: 0 6px 28px rgba(99, 102, 241, 0.4);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sensor-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .sensor-page-content {
+    padding: 16px;
+  }
+
+  .sensor-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px 18px;
+  }
+
+  .sensor-form-header {
+    padding: 14px 18px;
+  }
+
+  .sensor-form-actions {
+    padding: 14px 18px 18px;
+    flex-direction: column-reverse;
+  }
+
+  .sensor-btn-cancel,
+  .sensor-btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .sensor-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px;
+  }
+
+  .sensor-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

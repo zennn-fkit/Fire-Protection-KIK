@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, History, Sliders, Flame, Bell, ChevronLeft, ChevronRight, Droplets, Monitor } from 'lucide-react';
+import { LayoutDashboard, History, Sliders, Flame, Bell, ChevronLeft, ChevronRight, Droplets, Monitor, Settings } from 'lucide-react';
 import { useSensor } from '../../context/SensorContext';
 import logoBaru from '../../assets/logo.png';
 
@@ -9,6 +9,7 @@ const NAV = [
   { to: '/monitoring', icon: Monitor, label: 'Monitoring' },
   { to: '/history', icon: History, label: 'Riwayat Data' },
   { to: '/control', icon: Sliders, label: 'Kontrol' },
+  { to: '/sensors', icon: Settings, label: 'Manajemen Sensor' },
 ];
 
 export default function Sidebar({ isOpen, onToggle }) {
