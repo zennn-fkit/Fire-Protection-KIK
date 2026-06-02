@@ -46,6 +46,21 @@
 
 html {
   scroll-behavior: smooth;
+  /*
+   * ─── Fluid Root Scaling (Closed-Loop Sizing) ───────────────────────────────
+   * Baseline : 16px  @ 1366px viewport  (768p monitor)
+   * Target   : 18px  @ 1920px viewport  (1080p monitor)
+   *
+   * Formula  : clamp(MIN, PREFERRED, MAX)
+   *   MIN      = 14px  – prevents shrinkage below 960px wide
+   *   PREFERRED= calc(0.78vw + 5.35px) – linear interpolation across the range
+   *   MAX      = 18px  – caps growth beyond 1920px (ultra-wide)
+   *
+   * Every rem-based value (sidebar width, header height, padding, gap, font)
+   * will scale proportionally between the two reference resolutions.
+   * ─────────────────────────────────────────────────────────────────────────
+   */
+  font-size: clamp(14px, 0.78vw + 5.35px, 18px);
 }
 
 body {
@@ -79,8 +94,8 @@ body {
 .card {
   background: linear-gradient(135deg, #1e2d4a 0%, #131d35 100%);
   border: 1px solid #2d3f65;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 0.75rem;                 /* fluid: 12px */
+  padding: clamp(0.625rem, 1vw, 1rem);   /* fluid: 10px → 12px → 16px */
   position: relative;
   overflow: hidden;
   transition: border-color 0.3s, box-shadow 0.3s;
@@ -127,30 +142,35 @@ body {
 .badge-danger { color: #f87171; background: rgba(248, 113, 113, 0.12); }
 
 /* ─── Sidebar ───────────────────────────────────────────────── */
+/*
+ * Sidebar width uses rem so it inherits the fluid html font-size.
+ * 15rem × 16px(base) = 240px @ 768p  →  15rem × 18px(scaled) = 270px @ 1080p
+ * Collapsed: 5rem × 16px = 80px  →  5rem × 18px = 90px @ 1080p
+ */
 .sidebar {
-  width: 240px;
+  width: 15rem;                          /* fluid: 240px → 270px */
   min-height: 100vh;
   background: linear-gradient(180deg, #131d35 0%, #0f172a 100%);
   border-right: 1px solid #2d3f65;
   position: fixed;
   left: 0;
-  top: 64px;
+  top: 4rem;                             /* fluid: 64px → 72px */
   bottom: 0;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 4rem);
   z-index: 50;
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar.collapsed { width: 80px; }
+.sidebar.collapsed { width: 5rem; }     /* fluid: 80px → 90px */
 
 .sidebar-toggle {
   position: absolute;
-  right: -12px;
-  top: 32px;
-  width: 24px;
-  height: 24px;
+  right: -0.75rem;                       /* fluid: -12px */
+  top: 2rem;                             /* fluid: 32px */
+  width: 1.5rem;                         /* fluid: 24px */
+  height: 1.5rem;
   background: #1e2d4a;
   border: 1px solid #2d3f65;
   border-radius: 50%;
@@ -172,12 +192,12 @@ body {
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  border-radius: 10px;
-  margin: 2px 12px;
+  gap: 0.75rem;                          /* fluid: 12px */
+  padding: 0.75rem 1.25rem;              /* fluid: 12px 20px */
+  border-radius: 0.625rem;              /* fluid: 10px */
+  margin: 0.125rem 0.75rem;             /* fluid: 2px 12px */
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 0.875rem;                   /* fluid: 14px */
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -187,9 +207,9 @@ body {
 }
 
 .sidebar.collapsed .sidebar-link {
-  padding: 12px 0;
+  padding: 0.75rem 0;
   justify-content: center;
-  margin: 2px 8px;
+  margin: 0.125rem 0.5rem;
 }
 
 .sidebar-link:hover {
@@ -204,23 +224,30 @@ body {
 }
 
 /* ─── Main Layout ───────────────────────────────────────────── */
+/*
+ * margin-left must mirror sidebar width exactly (rem-based).
+ */
 .main-content {
-  margin-left: 240px;
+  margin-left: 15rem;                    /* mirrors .sidebar width */
   min-height: 100vh;
   padding: 0;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex: 1;
 }
 
-.main-content.collapsed { margin-left: 80px; }
+.main-content.collapsed { margin-left: 5rem; } /* mirrors .sidebar.collapsed */
 
 /* ─── Header ────────────────────────────────────────────────── */
+/*
+ * Header height is 4rem – syncs with sidebar top offset.
+ * Padding uses clamp for finer viewport-relative control.
+ */
 .header {
   background: rgba(15, 23, 42, 0.93);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid #2d3f65;
-  padding: 0 28px;
-  height: 64px;
+  padding: 0 clamp(1rem, 1.75vw, 2.25rem);  /* fluid: ~16px → ~28px → ~36px */
+  height: 4rem;                              /* fluid: 64px → 72px */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -460,7 +487,7 @@ body {
     radial-gradient(ellipse at 80% 80%, rgba(0, 242, 255, 0.04) 0%, transparent 50%),
     #0f172a;
   min-height: 100vh;
-  padding-top: 64px;
+  padding-top: 4rem;  /* fluid: syncs with header height (4rem) */
 }
 
 /* ─── History Page ──────────────────────────────────────────── */
@@ -560,12 +587,12 @@ body {
 /* Monitoring Product Trial */
 .monitoring-page {
   width: 100%;
-  max-width: 1480px;
+  max-width: clamp(1100px, 90vw, 1680px);  /* expands to fill 1080p screens */
   margin: 0 auto;
-  padding: 20px 28px 32px;
+  padding: clamp(1rem, 1.5vw, 1.75rem) clamp(1rem, 2vw, 2.25rem) 2rem;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: clamp(0.875rem, 1.5vw, 1.5rem);     /* fluid: 14px → 20px → 24px */
 }
 
 .monitoring-tabs {
@@ -580,9 +607,9 @@ body {
 }
 
 .monitoring-tab {
-  height: 44px;
+  height: 2.75rem;                         /* fluid: 44px → 49.5px */
   border: 1px solid #243f68;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: rgba(13, 31, 56, 0.52);
   color: #94a3b8;
   cursor: pointer;
@@ -591,8 +618,8 @@ body {
   min-width: max-content;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 0.5rem;                             /* fluid: 8px */
+  font-size: clamp(0.7rem, 0.85vw, 0.875rem);
   font-weight: 800;
   letter-spacing: 0;
   transition: border-color 160ms ease-out, color 160ms ease-out, background 160ms ease-out;
@@ -649,8 +676,8 @@ body {
 .monitoring-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);    /* fluid: 12px → 14px → 20px */
+  margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
 }
 
 .monitoring-summary.compact {
@@ -659,10 +686,10 @@ body {
 
 .monitoring-status-card,
 .monitoring-detector-card {
-  min-height: 150px;
+  min-height: clamp(8rem, 12vw, 11rem);   /* fluid: 128px → 150px → 176px */
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);
   justify-content: space-between;
 }
 
@@ -722,25 +749,25 @@ body {
 
 .monitoring-main-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1.1fr);
-  gap: 16px;
+  grid-template-columns: minmax(20rem, 0.9fr) minmax(22.5rem, 1.1fr);  /* rem-based */
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);
   align-items: stretch;
-  margin-bottom: 16px;
+  margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
 }
 
 .monitoring-muted-panel,
 .monitoring-building-note {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
+  gap: 0.75rem;                           /* fluid: 12px */
+  padding: clamp(0.75rem, 1.1vw, 1.25rem);
 }
 
 .monitoring-gauge-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);
+  margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
 }
 
 .monitoring-meter-needs-ct {
@@ -757,8 +784,8 @@ body {
 .monitoring-building-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);
+  margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
 }
 
 .monitoring-detector-card {
