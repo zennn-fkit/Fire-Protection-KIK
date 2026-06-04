@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Wind } from 'lucide-react'; // Using Wind icon for gas, or Cloud
+import smargasSvg from '../../assets/smartgas.svg';
 
 const CX = 75, CY = 75;
 const START = 140, SWEEP = 260;
@@ -27,7 +27,6 @@ export default function GasPanel({
   pressure = 0,
   valve_status = 'CLOSED',
   maxPressure = 400,
-  icon: Icon = Wind,
   iconColor = "#10b981", // Emerald
   valveLabel = "Status Katup"
 }) {
@@ -71,7 +70,7 @@ export default function GasPanel({
             background: `${iconColor}1a`, border: `1px solid ${iconColor}4d`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Icon size={22} color={iconColor} style={{ filter: `drop-shadow(0 0 6px ${iconColor}99)` }} />
+            <img src={smargasSvg} alt="Smargas" width={22} height={22} style={{ filter: `drop-shadow(0 0 6px ${iconColor}99) brightness(1.8)` }} />
           </div>
           <div style={{
             padding: '4px 10px', borderRadius: 999, fontSize: 10, fontWeight: 800,

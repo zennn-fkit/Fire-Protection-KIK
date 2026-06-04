@@ -94,8 +94,10 @@ body {
 .card {
   background: linear-gradient(135deg, #1e2d4a 0%, #131d35 100%);
   border: 1px solid #2d3f65;
-  border-radius: 0.75rem;                 /* fluid: 12px */
-  padding: clamp(0.625rem, 1vw, 1rem);   /* fluid: 10px → 12px → 16px */
+  border-radius: 0.75rem;
+  /* fluid: 12px */
+  padding: clamp(0.625rem, 1vw, 1rem);
+  /* fluid: 10px → 12px → 16px */
   position: relative;
   overflow: hidden;
   transition: border-color 0.3s, box-shadow 0.3s;
@@ -126,20 +128,49 @@ body {
 }
 
 @keyframes danger-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(248, 113, 113, 0.10); }
-  50% { box-shadow: 0 0 32px rgba(248, 113, 113, 0.25); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(248, 113, 113, 0.10);
+  }
+
+  50% {
+    box-shadow: 0 0 32px rgba(248, 113, 113, 0.25);
+  }
 }
 
 /* ─── Glow Effects ──────────────────────────────────────────── */
-.glow-cyan { filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.5)); }
-.glow-emerald { filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5)); }
-.glow-indigo { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5)); }
-.glow-red { filter: drop-shadow(0 0 7px rgba(248, 113, 113, 0.5)); }
+.glow-cyan {
+  filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.5));
+}
+
+.glow-emerald {
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+}
+
+.glow-indigo {
+  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
+}
+
+.glow-red {
+  filter: drop-shadow(0 0 7px rgba(248, 113, 113, 0.5));
+}
 
 /* ─── Status Badge ───────────────────────────────────────────── */
-.badge-normal { color: #10B981; background: rgba(16, 185, 129, 0.12); }
-.badge-warning { color: #f59e0b; background: rgba(245, 158, 11, 0.12); }
-.badge-danger { color: #f87171; background: rgba(248, 113, 113, 0.12); }
+.badge-normal {
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.badge-warning {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.badge-danger {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+}
 
 /* ─── Sidebar ───────────────────────────────────────────────── */
 /*
@@ -148,13 +179,15 @@ body {
  * Collapsed: 5rem × 16px = 80px  →  5rem × 18px = 90px @ 1080p
  */
 .sidebar {
-  width: 15rem;                          /* fluid: 240px → 270px */
+  width: 15rem;
+  /* fluid: 240px → 270px */
   min-height: 100vh;
   background: linear-gradient(180deg, #131d35 0%, #0f172a 100%);
   border-right: 1px solid #2d3f65;
   position: fixed;
   left: 0;
-  top: 4rem;                             /* fluid: 64px → 72px */
+  top: 4rem;
+  /* fluid: 64px → 72px */
   bottom: 0;
   height: calc(100vh - 4rem);
   z-index: 50;
@@ -163,13 +196,20 @@ body {
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar.collapsed { width: 5rem; }     /* fluid: 80px → 90px */
+.sidebar.collapsed {
+  width: 5rem;
+}
+
+/* fluid: 80px → 90px */
 
 .sidebar-toggle {
   position: absolute;
-  right: -0.75rem;                       /* fluid: -12px */
-  top: 2rem;                             /* fluid: 32px */
-  width: 1.5rem;                         /* fluid: 24px */
+  right: -0.75rem;
+  /* fluid: -12px */
+  top: 2rem;
+  /* fluid: 32px */
+  width: 1.5rem;
+  /* fluid: 24px */
   height: 1.5rem;
   background: #1e2d4a;
   border: 1px solid #2d3f65;
@@ -192,12 +232,17 @@ body {
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;                          /* fluid: 12px */
-  padding: 0.75rem 1.25rem;              /* fluid: 12px 20px */
-  border-radius: 0.625rem;              /* fluid: 10px */
-  margin: 0.125rem 0.75rem;             /* fluid: 2px 12px */
+  gap: 0.75rem;
+  /* fluid: 12px */
+  padding: 0.75rem 1.25rem;
+  /* fluid: 12px 20px */
+  border-radius: 0.625rem;
+  /* fluid: 10px */
+  margin: 0.125rem 0.75rem;
+  /* fluid: 2px 12px */
   color: #94a3b8;
-  font-size: 0.875rem;                   /* fluid: 14px */
+  font-size: 0.875rem;
+  /* fluid: 14px */
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -228,14 +273,19 @@ body {
  * margin-left must mirror sidebar width exactly (rem-based).
  */
 .main-content {
-  margin-left: 15rem;                    /* mirrors .sidebar width */
+  margin-left: 15rem;
+  /* mirrors .sidebar width */
   min-height: 100vh;
   padding: 0;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex: 1;
 }
 
-.main-content.collapsed { margin-left: 5rem; } /* mirrors .sidebar.collapsed */
+.main-content.collapsed {
+  margin-left: 5rem;
+}
+
+/* mirrors .sidebar.collapsed */
 
 /* ─── Header ────────────────────────────────────────────────── */
 /*
@@ -246,8 +296,10 @@ body {
   background: rgba(15, 23, 42, 0.93);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid #2d3f65;
-  padding: 0 clamp(1rem, 1.75vw, 2.25rem);  /* fluid: ~16px → ~28px → ~36px */
-  height: 4rem;                              /* fluid: 64px → 72px */
+  padding: 0 clamp(1rem, 1.75vw, 2.25rem);
+  /* fluid: ~16px → ~28px → ~36px */
+  height: 4rem;
+  /* fluid: 64px → 72px */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -291,7 +343,11 @@ body {
   height: 28px;
 }
 
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
 .toggle-slider {
   position: absolute;
@@ -361,56 +417,126 @@ body {
 
 /* ─── Animations ────────────────────────────────────────────── */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-16px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 4px currentColor; }
-  50% { box-shadow: 0 0 16px currentColor, 0 0 32px currentColor; }
+
+  0%,
+  100% {
+    box-shadow: 0 0 4px currentColor;
+  }
+
+  50% {
+    box-shadow: 0 0 16px currentColor, 0 0 32px currentColor;
+  }
 }
 
 @keyframes subtle-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.animate-fadein { animation: fadeInUp 0.5s ease forwards; }
-.animate-slidein { animation: slideInLeft 0.4s ease forwards; }
-.animate-blink { animation: blink 1.5s ease-in-out infinite; }
-.animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fadein {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.animate-slidein {
+  animation: slideInLeft 0.4s ease forwards;
+}
+
+.animate-blink {
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
 /* ─── Water Tank ────────────────────────────────────────────── */
-.water-wave { animation: wave 3s linear infinite; }
+.water-wave {
+  animation: wave 3s linear infinite;
+}
 
 @keyframes wave {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 /* ─── Button ─────────────────────────────────────────────────── */
@@ -477,8 +603,15 @@ body {
 }
 
 @keyframes live-blink {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
 }
 
 /* ─── Page Gradient ─────────────────────────────────────────── */
@@ -487,7 +620,8 @@ body {
     radial-gradient(ellipse at 80% 80%, rgba(0, 242, 255, 0.04) 0%, transparent 50%),
     #0f172a;
   min-height: 100vh;
-  padding-top: 4rem;  /* fluid: syncs with header height (4rem) */
+  padding-top: 4rem;
+  /* fluid: syncs with header height (4rem) */
 }
 
 /* ─── History Page ──────────────────────────────────────────── */
@@ -505,9 +639,13 @@ body {
   min-width: 0;
 }
 
-.history-actions { flex: 0 0 auto; }
+.history-actions {
+  flex: 0 0 auto;
+}
 
-.history-table-scroll { overflow-x: hidden !important; }
+.history-table-scroll {
+  overflow-x: hidden !important;
+}
 
 .history-table {
   table-layout: fixed;
@@ -551,7 +689,9 @@ body {
   font-weight: 700;
 }
 
-.history-clickable-row { cursor: pointer; }
+.history-clickable-row {
+  cursor: pointer;
+}
 
 .history-clickable-row:hover td {
   background: rgba(59, 130, 246, 0.12);
@@ -564,12 +704,17 @@ body {
   }
 
   .history-table th,
-  .history-table td { padding: 8px 5px; }
+  .history-table td {
+    padding: 8px 5px;
+  }
 
-  .history-actions { margin-left: 0 !important; }
+  .history-actions {
+    margin-left: 0 !important;
+  }
 }
 
 @media (max-width: 760px) {
+
   .history-toolbar select,
   .history-toolbar input,
   .history-toolbar .btn {
@@ -577,22 +722,34 @@ body {
     width: 100%;
   }
 
-  .history-actions { width: 100%; }
-  .history-actions .btn { justify-content: center; }
+  .history-actions {
+    width: 100%;
+  }
 
-  .history-table-scroll { overflow-x: auto !important; }
-  .history-table { min-width: 720px; }
+  .history-actions .btn {
+    justify-content: center;
+  }
+
+  .history-table-scroll {
+    overflow-x: auto !important;
+  }
+
+  .history-table {
+    min-width: 720px;
+  }
 }
 
 /* Monitoring Product Trial */
 .monitoring-page {
   width: 100%;
-  max-width: clamp(1100px, 90vw, 1680px);  /* expands to fill 1080p screens */
+  max-width: clamp(1100px, 90vw, 1680px);
+  /* expands to fill 1080p screens */
   margin: 0 auto;
   padding: clamp(1rem, 1.5vw, 1.75rem) clamp(1rem, 2vw, 2.25rem) 2rem;
   display: flex;
   flex-direction: column;
-  gap: clamp(0.875rem, 1.5vw, 1.5rem);     /* fluid: 14px → 20px → 24px */
+  gap: clamp(0.875rem, 1.5vw, 1.5rem);
+  /* fluid: 14px → 20px → 24px */
 }
 
 .monitoring-tabs {
@@ -607,18 +764,20 @@ body {
 }
 
 .monitoring-tab {
-  height: 2.75rem;                         /* fluid: 44px → 49.5px */
+  height: 2.75rem;
+  /* fluid: 44px → 49.5px */
   border: 1px solid #243f68;
   border-radius: 0.5rem;
   background: rgba(13, 31, 56, 0.52);
   color: #94a3b8;
   cursor: pointer;
   display: inline-flex;
-  flex: 1 1 auto;
-  min-width: max-content;
+  flex: 1 1 0px;
+  min-width: 0;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;                             /* fluid: 8px */
+  gap: 0.5rem;
+  /* fluid: 8px */
   font-size: clamp(0.7rem, 0.85vw, 0.875rem);
   font-weight: 800;
   letter-spacing: 0;
@@ -632,6 +791,19 @@ body {
   background: rgba(59, 130, 246, 0.14);
 }
 
+.monitoring-tab img {
+  opacity: 0.7;
+  filter: brightness(1.1);
+  transition: opacity 160ms ease-out, filter 160ms ease-out;
+}
+
+.monitoring-tab:hover img,
+.monitoring-tab.active img {
+  opacity: 1;
+  filter: brightness(2.2) drop-shadow(0 0 4px rgba(59, 130, 246, 0.4));
+}
+
+
 .tab-danger-dot {
   width: 8px;
   height: 8px;
@@ -643,8 +815,19 @@ body {
 }
 
 @keyframes tab-danger-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
-  50% { opacity: 0.6; transform: scale(1.3); box-shadow: 0 0 16px rgba(239, 68, 68, 0.9); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.9);
+  }
 }
 
 .monitoring-section-header {
@@ -676,7 +859,8 @@ body {
 .monitoring-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.75rem, 1.1vw, 1.25rem);    /* fluid: 12px → 14px → 20px */
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);
+  /* fluid: 12px → 14px → 20px */
   margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
 }
 
@@ -686,7 +870,8 @@ body {
 
 .monitoring-status-card,
 .monitoring-detector-card {
-  min-height: clamp(8rem, 12vw, 11rem);   /* fluid: 128px → 150px → 176px */
+  min-height: clamp(8rem, 12vw, 11rem);
+  /* fluid: 128px → 150px → 176px */
   display: flex;
   flex-direction: column;
   gap: clamp(0.75rem, 1.1vw, 1.25rem);
@@ -749,7 +934,7 @@ body {
 
 .monitoring-main-grid {
   display: grid;
-  grid-template-columns: minmax(20rem, 0.9fr) minmax(22.5rem, 1.1fr);  /* rem-based */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(0.75rem, 1.1vw, 1.25rem);
   align-items: stretch;
   margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
@@ -759,7 +944,8 @@ body {
 .monitoring-building-note {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;                           /* fluid: 12px */
+  gap: 0.75rem;
+  /* fluid: 12px */
   padding: clamp(0.75rem, 1.1vw, 1.25rem);
 }
 
@@ -774,7 +960,7 @@ body {
   position: relative;
 }
 
-.monitoring-meter-needs-ct > span {
+.monitoring-meter-needs-ct>span {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -811,6 +997,7 @@ body {
 }
 
 @media (max-width: 1180px) {
+
   .monitoring-summary,
   .monitoring-gauge-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -825,6 +1012,10 @@ body {
   .monitoring-page {
     padding: 16px;
     gap: 16px;
+  }
+
+  .monitoring-tabs {
+    display: grid;
   }
 
   .monitoring-tabs,
@@ -849,7 +1040,7 @@ body {
     font-size: 18px;
   }
 
-  .monitoring-meter-needs-ct > span {
+  .monitoring-meter-needs-ct>span {
     position: static;
     margin-top: 8px;
   }
@@ -1194,3 +1385,313 @@ body {
     justify-content: center;
   }
 }
+
+.thermal-gradient-card {
+  padding: 0 !important;
+}
+
+/* Card layout wrapper */
+.thermal-card-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Left section styling */
+.thermal-left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.thermal-status-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s ease;
+}
+
+.thermal-text-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.thermal-status-title {
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.thermal-status-value {
+  font-size: clamp(24px, 2.5vw, 32px);
+  font-weight: 800;
+  line-height: 1.2;
+  transition: color 0.5s ease;
+}
+
+.thermal-status-desc {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Center section styling (Thermal Screen) */
+.thermal-center-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.thermal-screen-box {
+  position: relative;
+  width: 220px;
+  height: 140px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Screen background layers */
+.thermal-screen-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.thermal-screen-hotspot {
+  position: absolute;
+  inset: 0;
+  opacity: var(--intensity, 0.3);
+  background: radial-gradient(
+    ellipse 80% var(--hotspot-size, 30%) at 50% var(--hotspot-y, 80%),
+    var(--glow-color, #334155) 0%,
+    var(--hot-color, #1e293b) 40%,
+    transparent 100%
+  );
+  transition: opacity 1.5s ease, background 1.5s ease;
+}
+
+.thermal-screen-diffuse {
+  position: absolute;
+  inset: 0;
+  opacity: calc(var(--intensity, 0.3) * 0.5);
+  background: radial-gradient(
+    ellipse 120% 80% at 30% var(--hotspot-y, 80%),
+    var(--hot-color, #1e293b) 0%,
+    transparent 70%
+  ),
+  radial-gradient(
+    ellipse 100% 60% at 70% calc(var(--hotspot-y, 80%) + 10%),
+    var(--glow-color, #334155) 0%,
+    transparent 60%
+  );
+  filter: blur(15px);
+  transition: opacity 1.5s ease, background 1.5s ease;
+}
+
+/* Screen text overlay */
+.thermal-screen-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Marker positions & styles */
+.thermal-marker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.thermal-marker-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  box-shadow: 0 0 4px currentColor;
+}
+
+.max-temp-marker {
+  align-self: flex-start;
+  color: #ef4444; /* red for max temp */
+}
+
+.max-dot {
+  background: #ef4444;
+}
+
+.min-temp-marker {
+  align-self: flex-end;
+  color: #3b82f6; /* blue for min temp */
+}
+
+.min-dot {
+  background: #3b82f6;
+}
+
+/* Center crosshair hotspot indicator */
+.thermal-center-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  color: #ef4444;
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.thermal-crosshair-icon {
+  font-size: 14px;
+  font-weight: 300;
+  color: #ffffff;
+}
+
+.thermal-crosshair-text {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+/* Right section styling */
+.thermal-right-section {
+  align-self: flex-start;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.thermal-readiness-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* ── Thermal card grid wrapper (span 2 columns in the sensor grid) ── */
+.thermal-gradient-wrapper {
+  grid-column: span 2;
+}
+
+/* ── Smargas bottom grid: GasPanel (2 span) + Valve card (1 span) ── */
+.smargas-bottom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);
+  align-items: stretch;
+  margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
+}
+
+@media (max-width: 1180px) {
+  .smargas-bottom-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .smargas-bottom-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Sensor grid with thermal card ── */
+.monitoring-sensor-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);
+  margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
+}
+
+.monitoring-sensor-grid-bottom {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.1vw, 1.25rem);
+  margin-bottom: clamp(0.75rem, 1.1vw, 1.25rem);
+}
+
+@media (max-width: 1180px) {
+  .monitoring-sensor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .monitoring-sensor-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1024px) {
+  .thermal-card-layout {
+    padding: 18px;
+    gap: 16px;
+  }
+
+  .thermal-screen-box {
+    width: 180px;
+    height: 120px;
+  }
+}
+
+@media (max-width: 760px) {
+  .monitoring-sensor-grid,
+  .monitoring-sensor-grid-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .monitoring-sensor-grid > :first-child {
+    grid-column: auto;
+  }
+
+  .thermal-card-layout {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    position: relative;
+    padding: 20px;
+  }
+
+  .thermal-right-section {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+
+  .thermal-center-section {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .thermal-screen-box {
+    width: 100%;
+    max-width: 280px;
+    height: 150px;
+  }
+}

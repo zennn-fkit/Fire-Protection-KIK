@@ -6,8 +6,6 @@ import {
   Building2,
   Cpu,
   Droplets,
-  Flame,
-  Gauge,
   Settings,
   ShieldCheck,
   Sun,
@@ -21,6 +19,8 @@ import Header from '../components/layout/Header';
 import GaugeCard from '../components/dashboard/GaugeCard';
 import HydrantPanel from '../components/dashboard/HydrantPanel';
 import GasPanel from '../components/dashboard/GasPanel';
+import hydrantSvg from '../assets/hydrant.svg';
+import ThermalGradientCard from '../components/dashboard/ThermalGradientCard';
 
 import WaterTankPanel from '../components/dashboard/WaterTankPanel';
 import { ZONE_DEFAULT, ZONE_VOLTAGE } from '../utils/gaugeZones';
@@ -100,7 +100,7 @@ function ProductTabs({ activeTab, onChange, dangerStates = {} }) {
   const tabs = [
     { key: 'distribution', label: 'Panel Distribusi', icon: Zap },
     { key: 'building', label: 'Bangunan', icon: Building2 },
-    { key: 'hydrant', label: 'Hydrant', icon: Droplets },
+    { key: 'hydrant', label: 'Hydrant', icon: hydrantSvg },
     { key: 'smargas', label: 'Smargas', icon: Wind },
   ];
 
@@ -119,7 +119,11 @@ function ProductTabs({ activeTab, onChange, dangerStates = {} }) {
             className={`monitoring-tab ${active ? 'active' : ''}`}
             onClick={() => onChange(tab.key)}
           >
-            <Icon size={16} />
+            {typeof Icon === 'string' ? (
+              <img src={Icon} alt={tab.label} width={16} height={16} style={{ objectFit: 'contain' }} />
+            ) : (
+              <Icon size={16} />
+            )}
             <span>{tab.label}</span>
             {isDanger && <span className="tab-danger-dot" title="DANGER DETECTED" />}
           </button>
@@ -180,12 +184,14 @@ function DetectorCard({ icon: Icon, title, status }) {
   );
 }
 
-function ProductSummary({ items }) {
+function ProductSummary({ items, children }) {
+  const cols = items.length + (children ? 1 : 0);
   return (
-    <div className="monitoring-summary">
+    <div className="monitoring-summary" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
       {items.map((item) => (
         <StatusCard key={item.title} {...item} />
       ))}
+      {children}
     </div>
   );
 }
@@ -195,15 +201,6 @@ function HydrantView({ node3, waterPressure, waterLevel, waterDistance }) {
   const pressure = waterPressure ?? node3?.water_pressure ?? 0;
 
   const summary = [
-    {
-      icon: Gauge,
-      title: 'Pressure Gauge',
-      value: formatNumber(pressure, 2),
-      unit: 'Bar',
-      status: 'ready',
-      note: 'Tekanan hydrant dari pressure transducer.',
-      color: '#3b82f6',
-    },
     {
       icon: Settings,
       title: 'Kondisi Valve',
@@ -220,13 +217,12 @@ function HydrantView({ node3, waterPressure, waterLevel, waterDistance }) {
         <ReadinessBadge state="ready" />
       </SectionHeader>
 
-      <ProductSummary items={summary} />
-
       <div className="monitoring-main-grid">
         <WaterTankPanel
           level={waterLevel}
           distanceCm={waterDistance}
-          isReady={false}
+          pressure={pressure}
+          isReady={true}
         />
         <HydrantPanel
           pressure={node3?.water_pressure ?? pressure}
@@ -235,6 +231,8 @@ function HydrantView({ node3, waterPressure, waterLevel, waterDistance }) {
         />
 
       </div>
+
+      <ProductSummary items={summary} />
 
       <div className="card monitoring-muted-panel">
         <div>
@@ -296,7 +294,8 @@ function DistributionView({ panelData }) {
     },
   ];
 
-  const safetySensors = [
+  // Top row sensors (alongside thermal gradient card)
+  const topRowSensors = [
     {
       icon: Sun,
       title: 'UV Deteksi Api',
@@ -304,15 +303,6 @@ function DistributionView({ panelData }) {
       status: 'ready',
       note: 'Sensor UV siap sebagai indikator flame.',
       color: panelData?.uv_value ? '#ef4444' : '#10b981',
-    },
-    {
-      icon: Flame,
-      title: 'Thermal Kabel',
-      value: formatNumber(panelData?.thermal_temp, 1),
-      unit: 'C',
-      status: 'ready',
-      note: 'Pantau panas kabel panel distribusi.',
-      color: '#fb923c',
     },
     {
       icon: Thermometer,
@@ -323,6 +313,10 @@ function DistributionView({ panelData }) {
       note: 'SHT siap untuk suhu ruang panel.',
       color: '#60a5fa',
     },
+  ];
+
+  // Bottom row sensors
+  const bottomRowSensors = [
     {
       icon: Droplets,
       title: 'Kelembaban',
@@ -357,7 +351,23 @@ function DistributionView({ panelData }) {
         ))}
       </div>
 
-      <ProductSummary items={safetySensors} />
+      {/* Top row: Thermal Gradient (2x) + UV + Suhu */}
+      <div className="monitoring-sensor-grid">
+        <ThermalGradientCard
+          temperature={panelData?.thermal_temp}
+          status="ready"
+        />
+        {topRowSensors.map((item) => (
+          <StatusCard key={item.title} {...item} />
+        ))}
+      </div>
+
+      {/* Bottom row: Kelembaban + Karbon */}
+      <div className="monitoring-sensor-grid-bottom">
+        {bottomRowSensors.map((item) => (
+          <StatusCard key={item.title} {...item} />
+        ))}
+      </div>
     </motion.div>
   );
 }
@@ -399,39 +409,27 @@ function SmargasView({ node2 }) {
   const valveStatus = node2?.gas_valve_status ?? 'CLOSED';
   const isDanger = gasPressure > 8;
 
-  const summary = [
-    {
-      icon: Wind,
-      title: 'Sensor Gas',
-      value: formatNumber(gasPressure, 2),
-      unit: 'Bar',
-      status: 'ready',
-      note: 'Tekanan gas utama termonitor.',
-      color: isDanger ? '#ef4444' : '#10b981',
-    },
-    {
-      icon: Settings,
-      title: 'Solenoid Valve',
-      value: valveStatus === 'OPEN' ? 'Terbuka' : 'Tertutup',
-      status: 'ready',
-      note: 'Status katup jalur gas.',
-      color: valveStatus === 'OPEN' ? '#ef4444' : '#10b981',
-    },
-  ];
-
   return (
     <motion.div key="smargas" variants={tabVariants} initial="initial" animate="animate" exit="exit">
       <SectionHeader eyebrow="Product Smargas" title="Smart Gas Monitoring">
         <ReadinessBadge state="ready" />
       </SectionHeader>
-      
-      <ProductSummary items={summary} />
 
-      <div className="monitoring-main-grid" style={{ gridTemplateColumns: 'minmax(320px, 1fr)' }}>
+      {/* GasPanel (2 span) + Sensor Gas card (1 span) */}
+      <div className="smargas-bottom-grid">
         <GasPanel
           pressure={gasPressure}
           valve_status={valveStatus}
           maxPressure={10}
+        />
+        <StatusCard
+          icon={Wind}
+          title="Sensor Gas"
+          value={formatNumber(gasPressure, 2)}
+          unit="Bar"
+          status="ready"
+          note="Tekanan gas utama termonitor."
+          color={isDanger ? '#ef4444' : '#10b981'}
         />
       </div>
     </motion.div>

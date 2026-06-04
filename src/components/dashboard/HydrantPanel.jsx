@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Droplets } from 'lucide-react';
+import hydrantSvg from '../../assets/hydrant.svg';
 
 const CX = 75, CY = 75;
 const START = 140, SWEEP = 260;
@@ -58,7 +58,7 @@ export default function HydrantPanel({ pressure = 0, valve_status = 'CLOSED', ma
             background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Droplets size={22} color="#3b82f6" style={{ filter: 'drop-shadow(0 0 6px rgba(59,130,246,0.6))' }} />
+            <img src={hydrantSvg} alt="Hydrant" width={22} height={22} style={{ filter: 'drop-shadow(0 0 6px rgba(59,130,246,0.6)) brightness(1.8)' }} />
           </div>
           <div style={{
             padding: '4px 10px', borderRadius: 999, fontSize: 10, fontWeight: 800,
