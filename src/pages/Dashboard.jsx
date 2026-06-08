@@ -195,9 +195,9 @@ export default function Dashboard() {
         variants={pageVariants}
         initial="initial"
         animate="animate"
-        style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}
+        className="dashboard-content"
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        <div className="dashboard-gauges-grid">
           {gauges.map((g) => (
             <motion.div
               key={g.label}

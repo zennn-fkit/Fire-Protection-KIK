@@ -6,6 +6,7 @@ import { LayoutGroup } from 'framer-motion';
 import { SensorProvider, useSensor } from './context/SensorContext';
 import { useSocket } from './hooks/useSocket';
 import Sidebar from './components/layout/Sidebar';
+import BottomNavigation from './components/layout/BottomNavigation';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
 import Monitoring from './pages/Monitoring';
@@ -48,7 +49,7 @@ function InnerApp() {
   );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div className="app-layout">
       <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
       <main className={`main-content ${!isSidebarOpen ? 'collapsed' : ''}`}>
         <LayoutGroup>
@@ -56,11 +57,12 @@ function InnerApp() {
             <Route path="/" element={isWaitingForData ? loadingElement : <Dashboard />} />
             <Route path="/monitoring" element={isWaitingForData ? loadingElement : <Monitoring />} />
             <Route path="/history" element={<History />} />
-            <Route path="/control" element={isWaitingForData ? loadingElement : <Control />} />
+            {/* <Route path="/control" element={isWaitingForData ? loadingElement : <Control />} /> */}
             <Route path="/sensors" element={<SensorManagement />} />
           </Routes>
         </LayoutGroup>
       </main>
+      <BottomNavigation />
     </div>
   );
 }

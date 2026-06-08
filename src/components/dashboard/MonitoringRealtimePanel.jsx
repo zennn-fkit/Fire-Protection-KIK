@@ -21,9 +21,8 @@ export default function MonitoringRealtimePanel({
       }}
     >
       <div
+        className={hasChart ? "monitoring-realtime-grid" : ""}
         style={{
-          display: 'grid',
-          gridTemplateColumns: hasChart ? 'minmax(0, 1fr) 220px' : '1fr',
           gap: hasChart ? 16 : 0,
           alignItems: 'stretch',
         }}

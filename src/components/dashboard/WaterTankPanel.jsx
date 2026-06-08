@@ -1,10 +1,10 @@
-import { Ruler, Gauge, Waves } from 'lucide-react';
+import { Gauge, Waves } from 'lucide-react';
 import Wave from 'react-wavify';
 
 export default function WaterTankPanel({ level, pressure, distanceCm, isReady = true }) {
   const displayLevel = (level !== undefined && level !== null) ? Number(level) : 78;
   const displayPressure = (pressure !== undefined && pressure !== null) ? Number(pressure) : 5.31;
-  const displayDistance = (distanceCm !== undefined && distanceCm !== null) ? Number(distanceCm) : 59.0;
+
 
   // Exact color matching from dashboard (UltrasonicSensorCard)
   const getLevelColor = (lvl) => {
@@ -28,7 +28,7 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
   const levelPct = Math.max(0, Math.min(100, displayLevel)) / 100;
 
   const TANK_W = 120;
-  const TANK_H = 160;
+  const TANK_H = 200;
 
   return (
     <div className="card" style={{
@@ -37,11 +37,7 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
       flex: 1,
       padding: '24px 28px',
       minHeight: 280,
-      position: 'relative',
-      background: 'linear-gradient(135deg, #0b132b 0%, #0d1b2a 100%)',
-      border: '1px solid rgba(59, 130, 246, 0.15)',
-      borderRadius: '16px',
-      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), inset 0 0 24px rgba(11, 19, 43, 0.6)'
+      position: 'relative'
     }}>
       {!isReady && (
         <div style={{
@@ -133,16 +129,16 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
               position: 'relative',
               boxShadow: '0 16px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05)',
             }}>
-              {/* Water fill with wave animation */}
               <div style={{
                 position: 'absolute',
                 bottom: 0,
                 left: 0,
                 right: 0,
                 height: `${levelPct * 100}%`,
-                background: `linear-gradient(180deg, ${levelColor}80 0%, ${levelColor}D0 100%)`,
+                background: `linear-gradient(180deg, ${levelColor}B0 0%, ${levelColor} 100%)`, // Higher opacity gradient for uniform color
                 transition: 'height 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: `inset 0 0 16px ${levelColor}80, 0 -4px 12px ${levelColor}40`,
+                borderRadius: 'inherit', // Menyamakan lekukan bawah air dengan lekukan tandon
+                boxShadow: `inset 0 0 24px ${levelColor}80, 0 -4px 16px ${levelColor}40`, // Inset blue glow
               }}>
                 {/* Dynamic Wave surface */}
                 <div style={{ position: 'absolute', top: -14, left: 0, width: '100%', height: 24, pointerEvents: 'none' }}>
@@ -152,40 +148,39 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
                     options={{ height: 6, amplitude: 4, speed: 0.2, points: 3 }}
                     style={{ position: 'absolute', top: 0, opacity: 0.9 }}
                   />
-                  <Wave
-                    fill="#ffffff"
-                    paused={false}
-                    options={{
-                      height: 6,
-                      amplitude: 6,
-                      speed: 0.15,
-                      points: 4
-                    }}
-                    style={{ position: 'absolute', top: 4, opacity: 0.2 }}
-                  />
                 </div>
 
-                {/* Glowing bubbles */}
-                {levelPct > 0.05 && [0, 1, 2, 3].map((i) => {
-                  const size = 3 + (i % 2);
-                  const leftPct = 20 + (i * 25) % 60;
-                  const delay = i * 0.8;
-                  const dur = 2 + (i % 2);
-                  return (
-                    <div key={i} style={{
-                      position: 'absolute',
-                      left: `${leftPct}%`,
-                      bottom: '-10px',
-                      width: size,
-                      height: size,
-                      borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.6)',
-                      boxShadow: `0 0 6px rgba(255,255,255,0.8)`,
-                      animation: `bubbleRise ${dur}s ease-in ${delay}s infinite`,
-                      opacity: 0,
-                    }} />
-                  );
-                })}
+                {/* Bubbles Container (overflow hidden, so bubbles pop at the water surface!) */}
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  overflow: 'hidden',
+                  borderRadius: '0px', // Flat bottom
+                  pointerEvents: 'none',
+                  zIndex: 2
+                }}>
+                  {/* Glowing bubbles */}
+                  {levelPct > 0.05 && [0, 1, 2, 3, 4, 5].map((i) => {
+                    const size = 3 + (i % 2);
+                    const leftPct = 15 + (i * 18) % 70;
+                    const delay = i * 0.4;
+                    const dur = 2.0 + (i % 3) * 0.4;
+                    return (
+                      <div key={i} style={{
+                        position: 'absolute',
+                        left: `${leftPct}%`,
+                        bottom: '0px',
+                        width: size,
+                        height: size,
+                        borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.65)',
+                        boxShadow: `0 0 6px rgba(255,255,255,0.8)`,
+                        animation: `bubbleRise ${dur}s ease-in ${delay}s infinite`,
+                        opacity: 0,
+                      }} />
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Glass Reflection Overlay */}
@@ -253,50 +248,13 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
           height: '100%',
           paddingLeft: '16px'
         }}>
-          {/* Row 1: Height */}
+          {/* Row 1: Level */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '16px',
             padding: '16px 0',
             borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-            width: '100%'
-          }}>
-            <Ruler size={22} color="#38bdf8" style={{ strokeWidth: 1.5 }} />
-            <div style={{ display: 'flex', alignItems: 'baseline', fontFamily: "'Outfit', sans-serif" }}>
-              <span style={{ fontSize: '15px', color: '#94a3b8', marginRight: '6px', fontWeight: 500 }}>Height:</span>
-              <span style={{ fontSize: '26px', color: '#ffffff', fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
-                {displayDistance.toFixed(1)}
-              </span>
-              <span style={{ fontSize: '13px', color: '#475569', marginLeft: '4px', fontWeight: 600 }}>cm</span>
-            </div>
-          </div>
-
-          {/* Row 2: Pressure */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '16px 0',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-            width: '100%'
-          }}>
-            <Gauge size={22} color="#3b82f6" style={{ strokeWidth: 1.5 }} />
-            <div style={{ display: 'flex', alignItems: 'baseline', fontFamily: "'Outfit', sans-serif" }}>
-              <span style={{ fontSize: '15px', color: '#94a3b8', marginRight: '6px', fontWeight: 500 }}>Pressure:</span>
-              <span style={{ fontSize: '26px', color: '#ffffff', fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
-                {displayPressure.toFixed(2)}
-              </span>
-              <span style={{ fontSize: '13px', color: '#475569', marginLeft: '4px', fontWeight: 600 }}>Bar</span>
-            </div>
-          </div>
-
-          {/* Row 3: Level */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '16px 0',
             width: '100%'
           }}>
             <Waves size={22} color="#00f2ff" style={{ strokeWidth: 1.5 }} />
@@ -306,6 +264,24 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
                 {displayLevel.toFixed(0)}
               </span>
               <span style={{ fontSize: '13px', color: '#475569', marginLeft: '2px', fontWeight: 600 }}>%</span>
+            </div>
+          </div>
+
+          {/* Row 2: Pressure */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '16px 0',
+            width: '100%'
+          }}>
+            <Gauge size={22} color="#3b82f6" style={{ strokeWidth: 1.5 }} />
+            <div style={{ display: 'flex', alignItems: 'baseline', fontFamily: "'Outfit', sans-serif" }}>
+              <span style={{ fontSize: '15px', color: '#94a3b8', marginRight: '6px', fontWeight: 500 }}>Pressure:</span>
+              <span style={{ fontSize: '26px', color: '#ffffff', fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
+                {displayPressure.toFixed(2)}
+              </span>
+              <span style={{ fontSize: '13px', color: '#475569', marginLeft: '4px', fontWeight: 600 }}>Bar</span>
             </div>
           </div>
         </div>
@@ -321,9 +297,9 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
       <style>{`
         @keyframes bubbleRise { 
           0% { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; } 
-          20% { opacity: 1; } 
-          80% { opacity: 0.8; }
-          100% { transform: translateY(-130px) translateX(-6px) scale(1.3); opacity: 0; } 
+          5% { opacity: 1; } 
+          90% { opacity: 0.8; }
+          100% { transform: translateY(-220px) translateX(-6px) scale(1.3); opacity: 0; } 
         }
       `}</style>
     </div>
