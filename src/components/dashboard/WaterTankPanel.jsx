@@ -31,11 +31,10 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
   const TANK_H = 200;
 
   return (
-    <div className="card" style={{
+    <div className="card water-tank-card" style={{
       display: 'flex',
       flexDirection: 'column',
       flex: 1,
-      padding: '24px 28px',
       minHeight: 280,
       position: 'relative'
     }}>
@@ -111,7 +110,7 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
       </div>
 
       {/* Main Content */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '32px', flex: 1, width: '100%' }}>
+      <div className="water-tank-layout" style={{ display: 'flex', alignItems: 'center', gap: '32px', flex: 1, width: '100%' }}>
         {/* Left Column: Water Tank Capsule */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
           <div style={{ position: 'relative' }}>
@@ -240,14 +239,7 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
         </div>
 
         {/* Right Column: Data Metrics (borderless rows, plenty of breathing room) */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flex: 1,
-          justifyContent: 'center',
-          height: '100%',
-          paddingLeft: '16px'
-        }}>
+        <div className="water-tank-metrics">
           {/* Row 1: Level */}
           <div style={{
             display: 'flex',

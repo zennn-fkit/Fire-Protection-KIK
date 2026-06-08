@@ -8,10 +8,10 @@ import cron from 'node-cron';
 import pool from './config/db.js';
 import { evaluateAutoControl } from './utils/autoControl.js';
 
-import sensorRoutes     from './routes/sensor.js';
-import historyRoutes   from './routes/history.js';
-import alertRoutes     from './routes/alerts.js';
-import controlRoutes   from './routes/control.js';
+import sensorRoutes from './routes/sensor.js';
+import historyRoutes from './routes/history.js';
+import alertRoutes from './routes/alerts.js';
+import controlRoutes from './routes/control.js';
 import energyResetRoutes from './routes/energyReset.js';
 import waterUsageRoutes, { calcVolume } from './routes/waterUsage.js';
 import sensorsMasterRoutes from './routes/sensorsMaster.js';
@@ -20,7 +20,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname  = dirname(__filename);
+const __dirname = dirname(__filename);
 const TANK_CONFIG_PATH = join(__dirname, './config/tankConfig.json');
 
 function readTankConfig() {
@@ -68,7 +68,7 @@ function binaryStatus(value) {
   return Number(value) === 1 ? 'DANGER' : 'NORMAL';
 }
 
-const app    = express();
+const app = express();
 const server = http.createServer(app);
 
 // ── Socket.io ────────────────────────────────────────────────
@@ -175,7 +175,7 @@ mqttClient.on('message', async (topic, message) => {
     pressure, gas_pressure, valve_status, gas_valve_status,
     water_pressure, water_valve_status,
     water_level, uv_detected, smoke_status, flame_status, heat_status, thermal_status,
-    ac_voltage, mq7_ppm, max_temp
+    ac_voltage, mq7_ppm, max_temp, state_smoke
   } = data; // use raw data from this payload
 
   const final_voltage = voltage ?? ac_voltage ?? null;
@@ -192,9 +192,11 @@ mqttClient.on('message', async (topic, message) => {
   const final_uv = uv_value ?? uv_detected ?? null;
 
   const effectiveSmokeStatus =
-    thresholdStatus(final_co2, GAS_WARNING, GAS_DANGER) ??
-    normalizeStatus(smoke_status) ??
-    'NORMAL';
+    (nodeId === 2 && state_smoke !== undefined)
+      ? (Number(state_smoke) === 1 ? 'DANGER' : 'NORMAL')
+      : (thresholdStatus(final_co2, GAS_WARNING, GAS_DANGER) ??
+        normalizeStatus(smoke_status) ??
+        'NORMAL');
   const effectiveFlameStatus =
     binaryStatus(final_uv ?? 0) ??
     normalizeStatus(flame_status) ??
@@ -229,16 +231,19 @@ mqttClient.on('message', async (topic, message) => {
       water_level ?? null, final_valve ?? 'CLOSED'
     ];
 
-    if (insertBuffer.length < MAX_BUFFER_SIZE) {
-      insertBuffer.push(rowData);
-    } else {
-      insertBuffer.shift();
-      insertBuffer.push(rowData);
+    // Node2 (smoke detector) disimpan ke tabel sensor_bangunan — skip sensor_readings
+    if (nodeId !== 2) {
+      if (insertBuffer.length < MAX_BUFFER_SIZE) {
+        insertBuffer.push(rowData);
+      } else {
+        insertBuffer.shift();
+        insertBuffer.push(rowData);
+      }
     }
 
     const [states] = await pool.execute('SELECT device, status FROM actuator_state');
     const currentStates = Object.fromEntries(states.map(s => [s.device, s.status]));
-    
+
     const normalizedData = {
       ...data,
       ...normalizedStatuses
@@ -270,13 +275,22 @@ mqttClient.on('message', async (topic, message) => {
     const [updatedStates] = await pool.execute('SELECT device, status FROM actuator_state');
     updatedActuators = Object.fromEntries(updatedStates.map(s => [s.device, s.status]));
 
+    // ── Simpan ke tabel sensor_bangunan (khusus node2 — smoke detector) ──
+    if (nodeId === 2) {
+      await pool.execute(
+        `INSERT INTO sensor_bangunan (node_id, smoke_status) VALUES (?, ?)`,
+        [nodeId, effectiveSmokeStatus]
+      );
+      // console.log(`🏢 sensor_bangunan: node_id=${nodeId}, smoke_status=${effectiveSmokeStatus}`);
+    }
+
     console.log(`📥 MQTT Node ${nodeId} data saved.`);
   } catch (dbErr) {
     console.error('⚠️  MQTT DB error:', dbErr.message);
   }
 
-  const emitPayload = { 
-    ...data, 
+  const emitPayload = {
+    ...data,
     ...normalizedStatuses,
     voltage: final_voltage,
     power_kw: final_power_kw,
@@ -293,7 +307,7 @@ mqttClient.on('message', async (topic, message) => {
     water_valve_status: final_valve
   };
   Object.keys(emitPayload).forEach(k => emitPayload[k] === undefined && delete emitPayload[k]);
-  
+
   // Spesifik penyesuaian payload jika hardware pakai format lama
   if (topic === 'projek_orange_pi/sensor/master') {
     emitPayload.gas_pressure = emitPayload.pressure;
@@ -312,9 +326,9 @@ mqttClient.on('message', async (topic, message) => {
 // ── Batch Insert Interval ──────────────────────────────────────
 setInterval(async () => {
   if (insertBuffer.length === 0) return;
-  
+
   const batch = insertBuffer.splice(0, insertBuffer.length);
-  
+
   try {
     await pool.query(
       `INSERT INTO sensor_readings
@@ -337,10 +351,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ── Routes ───────────────────────────────────────────────────
-app.use('/api/sensor',      sensorRoutes);
-app.use('/api/history',     historyRoutes);
-app.use('/api/alerts',      alertRoutes);
-app.use('/api/control',     controlRoutes);
+app.use('/api/sensor', sensorRoutes);
+app.use('/api/history', historyRoutes);
+app.use('/api/alerts', alertRoutes);
+app.use('/api/control', controlRoutes);
 app.use('/api/water-usage', waterUsageRoutes);
 app.use('/api/energy-reset', energyResetRoutes);
 app.use('/api/sensors-master', sensorsMasterRoutes);
@@ -355,12 +369,12 @@ app.use((_req, res) => res.status(404).json({ error: 'Route not found' }));
 // Format: '0 0 * * *' = jam 00:00 setiap hari
 cron.schedule('0 0 * * *', async () => {
   try {
-    const cfg   = readTankConfig();
-    const dist  = latestSensorData.water_distance;   // jarak sensor (cm)
+    const cfg = readTankConfig();
+    const dist = latestSensorData.water_distance;   // jarak sensor (cm)
     const maxDist = cfg.maxDistanceCm || 200;
     const waterLevelCm = dist != null ? Math.max(0, maxDist - dist) : null;
     const volume = calcVolume(waterLevelCm, cfg);
-    const today  = new Date().toISOString().slice(0, 10);
+    const today = new Date().toISOString().slice(0, 10);
 
     await pool.execute(
       `INSERT INTO water_usage (date, volume_m3, status)
@@ -382,10 +396,10 @@ cron.schedule('0 1 25 * *', async () => {
     const month = String(nextMonth.getMonth() + 1).padStart(2, '0');
     const year = nextMonth.getFullYear();
     const partitionName = `p${year}${month}`;
-    
+
     const limitDate = new Date(year, nextMonth.getMonth() + 1, 1);
     const limitDateStr = limitDate.toISOString().slice(0, 10);
-    
+
     await pool.query(
       `ALTER TABLE sensor_readings ADD PARTITION (PARTITION ${partitionName} VALUES LESS THAN (TO_DAYS('${limitDateStr}')))`
     );

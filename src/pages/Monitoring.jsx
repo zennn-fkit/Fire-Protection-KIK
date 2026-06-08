@@ -372,8 +372,8 @@ function DistributionView({ panelData }) {
   );
 }
 
-function BuildingView({ detectors }) {
-  const smokeStatus = detectors?.smoke;
+function BuildingView({ detectors, node2 }) {
+  const smokeStatus = node2?.smoke_status ?? detectors?.smoke ?? 'NORMAL';
   const heatStatus = detectors?.heat;
 
   return (
@@ -444,7 +444,7 @@ export default function Monitoring() {
   const dangerStates = useMemo(() => {
     return {
       distribution: panelData?.uv_value === 1 || panelData?.thermal_temp >= 60 || panelData?.temperature_sht >= 60,
-      building: detectors?.smoke === 'DANGER' || detectors?.heat === 'DANGER',
+      building: (node2?.smoke_status ?? detectors?.smoke) === 'DANGER' || detectors?.heat === 'DANGER',
       hydrant: false,
       smargas: (node2?.gas_pressure ?? 0) > 8,
     };
@@ -455,7 +455,7 @@ export default function Monitoring() {
       return <DistributionView panelData={panelData} />;
     }
     if (activeTab === 'building') {
-      return <BuildingView detectors={detectors} />;
+      return <BuildingView detectors={detectors} node2={node2} />;
     }
     if (activeTab === 'smargas') {
       return <SmargasView node2={node2} />;

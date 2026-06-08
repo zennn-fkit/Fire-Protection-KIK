@@ -1728,7 +1728,7 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid #2d3f65;
-  z-index: 100;
+  z-index: 1000;
   align-items: center;
   justify-content: space-around;
   padding: 0 0.5rem;
@@ -1809,6 +1809,19 @@ body {
   width: 100%;
 }
 
+.water-tank-card {
+  padding: 24px 28px;
+}
+
+.water-tank-metrics {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+  height: 100%;
+  padding-left: 16px;
+}
+
 /* ── Media Queries for Mobile (width <= 768px) ── */
 @media (max-width: 768px) {
   .dashboard-content {
@@ -1880,5 +1893,20 @@ body {
   .monitoring-realtime-grid {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 16px !important;
+  }
+
+  .water-tank-card {
+    padding: 16px !important;
+  }
+
+  .water-tank-layout {
+    flex-direction: column !important;
+    gap: 20px !important;
+    align-items: center !important;
+  }
+
+  .water-tank-metrics {
+    padding-left: 0 !important;
+    width: 100%;
   }
 }
