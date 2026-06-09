@@ -161,11 +161,10 @@ export default function EnergyResetModal({
               <button
                 onClick={handleConfirm}
                 disabled={loading}
-                className={`p-2.5 px-6 rounded-lg text-white text-[13px] font-bold transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  loading
+                className={`p-2.5 px-6 rounded-lg text-white text-[13px] font-bold transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${loading
                     ? 'bg-orange-500/40 shadow-none cursor-not-allowed'
                     : 'bg-gradient-to-br from-orange-500 to-amber-500 shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.5)]'
-                }`}
+                  }`}
               >
                 {loading ? (
                   <>

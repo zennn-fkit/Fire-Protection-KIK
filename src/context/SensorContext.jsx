@@ -49,6 +49,18 @@ function binaryDangerStatus(value) {
   return Number(value) === 1 ? 'DANGER' : 'NORMAL';
 }
 
+function make3Phase(baseValue, delta = 2, decimals = 1) {
+  const val = Number(baseValue);
+  const r = val + (Math.random() - 0.5) * delta;
+  const s = val + (Math.random() - 0.5) * delta;
+  const t = val + (Math.random() - 0.5) * delta;
+  return {
+    r: Number(r.toFixed(decimals)),
+    s: Number(s.toFixed(decimals)),
+    t: Number(t.toFixed(decimals)),
+  };
+}
+
 // ── Initial State ─────────────────────────────────────────────
 const initialState = {
   connected: false,
@@ -115,13 +127,23 @@ function reducer(state, action) {
           uv_value: newUvDetected,
           frequency: d.frequency ?? (state.panelData?.frequency ?? 50),
         };
+        const baseKw = d.power_kw ?? (state.panelData?.power_kw ?? 0);
+        const baseWatt = d.power_watt ?? (state.panelData?.power_watt ?? 0);
+        const baseVoltage = isRealACVoltage ? incomingVoltage : (state.panelData?.voltage ?? 220);
+        const baseAmp = d.current_amp ?? (state.panelData?.current_amp ?? 0);
+
+        const kw3 = make3Phase(baseKw, 0.1, 2);
+        const watt3 = make3Phase(baseWatt, 100, 0);
+        const volt3 = make3Phase(baseVoltage, 4, 1);
+        const amp3 = make3Phase(baseAmp, 2, 1);
+
         const newPoint = {
           time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          kw: d.power_kw ?? (state.panelData?.power_kw ?? 0),
-          watt: d.power_watt ?? (state.panelData?.power_watt ?? 0),
-          voltage: isRealACVoltage ? incomingVoltage : (state.panelData?.voltage ?? 220),
-          amp: d.current_amp ?? (state.panelData?.current_amp ?? 0),
-          hz: 50,
+          kw_r: kw3.r, kw_s: kw3.s, kw_t: kw3.t,
+          watt_r: watt3.r, watt_s: watt3.s, watt_t: watt3.t,
+          voltage_r: volt3.r, voltage_s: volt3.s, voltage_t: volt3.t,
+          amp_r: amp3.r, amp_s: amp3.s, amp_t: amp3.t,
+          hz: d.frequency ?? (state.panelData?.frequency ?? 50),
         };
         newState.energyHistory = [...(state.energyHistory || []).slice(-29), newPoint];
 
@@ -235,13 +257,24 @@ function reducer(state, action) {
           water_level: isFresh(rts, 'water_level') ? state.water_level : 78,
           water_pressure: isFresh(rts, 'water_pressure') ? state.water_pressure : 4.8,
           water_distance: isFresh(rts, 'water_distance') ? state.water_distance : 62.0,
-          energyHistory: isFresh(rts, 'master') ? state.energyHistory : Array.from({ length: 20 }, (_, i) => ({
-            time: new Date(Date.now() - (19 - i) * 30000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-            kw: +(1.4 + Math.random() * 0.8).toFixed(2),
-            voltage: +(218 + Math.random() * 6).toFixed(1),
-            amp: +(148 + Math.random() * 2).toFixed(1),
-            hz: +(50 + Math.random() * 0.4).toFixed(2),
-          })),
+          energyHistory: isFresh(rts, 'master') ? state.energyHistory : Array.from({ length: 20 }, (_, i) => {
+            const baseKw = 1.4 + Math.random() * 0.8;
+            const baseWatt = baseKw * 1000;
+            const baseVoltage = 218 + Math.random() * 6;
+            const baseAmp = 148 + Math.random() * 2;
+            const kw3 = make3Phase(baseKw, 0.1, 2);
+            const watt3 = make3Phase(baseWatt, 100, 0);
+            const volt3 = make3Phase(baseVoltage, 4, 1);
+            const amp3 = make3Phase(baseAmp, 2, 1);
+            return {
+              time: new Date(Date.now() - (19 - i) * 30000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+              kw_r: kw3.r, kw_s: kw3.s, kw_t: kw3.t,
+              watt_r: watt3.r, watt_s: watt3.s, watt_t: watt3.t,
+              voltage_r: volt3.r, voltage_s: volt3.s, voltage_t: volt3.t,
+              amp_r: amp3.r, amp_s: amp3.s, amp_t: amp3.t,
+              hz: +(50 + Math.random() * 0.4).toFixed(2),
+            };
+          }),
         };
       }
 
@@ -250,12 +283,22 @@ function reducer(state, action) {
 
       // panelData + energyHistory (sumber: master node)
       if (!isFresh(rts, 'master') && state.panelData) {
+        const baseKw = state.panelData.power_kw + (Math.random() - 0.5) * 0.1;
+        const baseWatt = state.panelData.power_watt + (Math.random() - 0.5) * 100;
+        const baseVoltage = state.panelData.voltage + (Math.random() - 0.5) * 1;
+        const baseAmp = state.panelData.current_amp + (Math.random() - 0.5) * 2;
+
+        const kw3 = make3Phase(baseKw, 0.1, 2);
+        const watt3 = make3Phase(baseWatt, 100, 0);
+        const volt3 = make3Phase(baseVoltage, 4, 1);
+        const amp3 = make3Phase(baseAmp, 2, 1);
+
         const newPoint = {
           time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          kw: +(state.panelData.power_kw + (Math.random() - 0.5) * 0.1).toFixed(2),
-          watt: +(state.panelData.power_watt + (Math.random() - 0.5) * 100).toFixed(0),
-          voltage: +(state.panelData.voltage + (Math.random() - 0.5) * 1).toFixed(1),
-          amp: +(state.panelData.current_amp + (Math.random() - 0.5) * 2).toFixed(1),
+          kw_r: kw3.r, kw_s: kw3.s, kw_t: kw3.t,
+          watt_r: watt3.r, watt_s: watt3.s, watt_t: watt3.t,
+          voltage_r: volt3.r, voltage_s: volt3.s, voltage_t: volt3.t,
+          amp_r: amp3.r, amp_s: amp3.s, amp_t: amp3.t,
           hz: 50,
         };
         nextState.panelData = {

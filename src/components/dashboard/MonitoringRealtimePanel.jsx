@@ -6,7 +6,7 @@ export default function MonitoringRealtimePanel({
   energyHistory,
   waterDistance,
   maxTankCm = 200,
-  chartTitle = 'Monitoring Realtime 1',
+  chartTitle = 'Monitoring Realtime 3-Phase',
 }) {
   const hasChart = energyHistory?.length > 0;
 
@@ -32,7 +32,7 @@ export default function MonitoringRealtimePanel({
             embedded
             data={energyHistory}
             title={chartTitle}
-            initialMetric="kw"
+            initialMetric="watt"
             chartHeight={250}
           />
         )}

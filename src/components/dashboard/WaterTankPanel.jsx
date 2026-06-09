@@ -1,9 +1,12 @@
 import { Gauge, Waves } from 'lucide-react';
 import Wave from 'react-wavify';
+import { useTankConfig } from '../../hooks/useTankConfig';
 
 export default function WaterTankPanel({ level, pressure, distanceCm, isReady = true }) {
+  const { calcLiters } = useTankConfig();
   const displayLevel = (level !== undefined && level !== null) ? Number(level) : 78;
   const displayPressure = (pressure !== undefined && pressure !== null) ? Number(pressure) : 5.31;
+  const currentLiters = calcLiters(distanceCm, displayLevel / 100);
 
 
   // Exact color matching from dashboard (UltrasonicSensorCard)
@@ -211,19 +214,19 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
                   fontSize: 28, color: '#fff',
                   textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.3)',
                 }}>
-                  {displayLevel.toFixed(1)}
+                  {currentLiters}
                 </span>
                 <span style={{
                   fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: 600,
                   letterSpacing: '0.1em',
                   textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                 }}>
-                  %
+                  L
                 </span>
               </div>
             </div>
           </div>
-
+ 
           {/* Footer Text */}
           <div style={{
             marginTop: '12px',
@@ -237,7 +240,7 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
             LAST UPDATED: 2 mins ago
           </div>
         </div>
-
+ 
         {/* Right Column: Data Metrics (borderless rows, plenty of breathing room) */}
         <div className="water-tank-metrics">
           {/* Row 1: Level */}
@@ -253,9 +256,9 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
             <div style={{ display: 'flex', alignItems: 'baseline', fontFamily: "'Outfit', sans-serif" }}>
               <span style={{ fontSize: '15px', color: '#94a3b8', marginRight: '6px', fontWeight: 500 }}>Level:</span>
               <span style={{ fontSize: '26px', color: '#ffffff', fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
-                {displayLevel.toFixed(0)}
+                {currentLiters}
               </span>
-              <span style={{ fontSize: '13px', color: '#475569', marginLeft: '2px', fontWeight: 600 }}>%</span>
+              <span style={{ fontSize: '13px', color: '#475569', marginLeft: '2px', fontWeight: 600 }}>L</span>
             </div>
           </div>
 

@@ -1025,10 +1025,21 @@ body {
   }
 
   .monitoring-tabs {
-    display: grid;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 8px !important;
+    padding-right: 40px;
+    width: 100%;
   }
 
-  .monitoring-tabs,
+  .monitoring-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
   .monitoring-summary,
   .monitoring-summary.compact,
   .monitoring-gauge-grid,
@@ -1037,8 +1048,13 @@ body {
   }
 
   .monitoring-tab {
-    justify-content: flex-start;
-    padding: 0 14px;
+    flex: 0 0 auto !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+    height: 2.75rem !important;
+    width: auto !important;
   }
 
   .monitoring-section-header {
@@ -1486,12 +1502,10 @@ body {
   position: absolute;
   inset: 0;
   opacity: var(--intensity, 0.3);
-  background: radial-gradient(
-    ellipse 80% var(--hotspot-size, 30%) at 50% var(--hotspot-y, 80%),
-    var(--glow-color, #334155) 0%,
-    var(--hot-color, #1e293b) 40%,
-    transparent 100%
-  );
+  background: radial-gradient(ellipse 80% var(--hotspot-size, 30%) at 50% var(--hotspot-y, 80%),
+      var(--glow-color, #334155) 0%,
+      var(--hot-color, #1e293b) 40%,
+      transparent 100%);
   transition: opacity 1.5s ease, background 1.5s ease;
 }
 
@@ -1499,16 +1513,12 @@ body {
   position: absolute;
   inset: 0;
   opacity: calc(var(--intensity, 0.3) * 0.5);
-  background: radial-gradient(
-    ellipse 120% 80% at 30% var(--hotspot-y, 80%),
-    var(--hot-color, #1e293b) 0%,
-    transparent 70%
-  ),
-  radial-gradient(
-    ellipse 100% 60% at 70% calc(var(--hotspot-y, 80%) + 10%),
-    var(--glow-color, #334155) 0%,
-    transparent 60%
-  );
+  background: radial-gradient(ellipse 120% 80% at 30% var(--hotspot-y, 80%),
+      var(--hot-color, #1e293b) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 100% 60% at 70% calc(var(--hotspot-y, 80%) + 10%),
+      var(--glow-color, #334155) 0%,
+      transparent 60%);
   filter: blur(15px);
   transition: opacity 1.5s ease, background 1.5s ease;
 }
@@ -1545,7 +1555,8 @@ body {
 
 .max-temp-marker {
   align-self: flex-start;
-  color: #ef4444; /* red for max temp */
+  color: #ef4444;
+  /* red for max temp */
 }
 
 .max-dot {
@@ -1554,7 +1565,8 @@ body {
 
 .min-temp-marker {
   align-self: flex-end;
-  color: #3b82f6; /* blue for min temp */
+  color: #3b82f6;
+  /* blue for min temp */
 }
 
 .min-dot {
@@ -1643,7 +1655,7 @@ body {
   align-items: stretch;
 }
 
-.monitoring-sensor-grid > :first-child {
+.monitoring-sensor-grid> :first-child {
   grid-column: span 2;
 }
 
@@ -1660,7 +1672,7 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .monitoring-sensor-grid > :first-child {
+  .monitoring-sensor-grid> :first-child {
     grid-column: 1 / -1;
   }
 }
@@ -1678,12 +1690,13 @@ body {
 }
 
 @media (max-width: 760px) {
+
   .monitoring-sensor-grid,
   .monitoring-sensor-grid-bottom {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .monitoring-sensor-grid > :first-child {
+  .monitoring-sensor-grid> :first-child {
     grid-column: auto;
   }
 
@@ -1822,6 +1835,32 @@ body {
   padding-left: 16px;
 }
 
+.monitoring-tabs-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.monitoring-tabs-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(90deg, transparent, #0f172a 100%);
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@media (max-width: 760px) {
+  .monitoring-tabs-wrapper::after {
+    opacity: 1;
+  }
+}
+
 /* ── Media Queries for Mobile (width <= 768px) ── */
 @media (max-width: 768px) {
   .dashboard-content {
@@ -1867,7 +1906,8 @@ body {
     gap: 8px !important;
   }
 
-  .header-row-1, .header-row-2 {
+  .header-row-1,
+  .header-row-2 {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1909,4 +1949,4 @@ body {
     padding-left: 0 !important;
     width: 100%;
   }
-}
+}

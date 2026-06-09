@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Activity,
@@ -97,6 +97,21 @@ function ReadinessBadge({ state = 'ready' }) {
 }
 
 function ProductTabs({ activeTab, onChange, dangerStates = {} }) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const activeEl = containerRef.current.querySelector('.monitoring-tab.active');
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        });
+      }
+    }
+  }, [activeTab]);
+
   const tabs = [
     { key: 'distribution', label: 'Panel Distribusi', icon: Zap },
     { key: 'building', label: 'Bangunan', icon: Building2 },
@@ -105,30 +120,37 @@ function ProductTabs({ activeTab, onChange, dangerStates = {} }) {
   ];
 
   return (
-    <div className="monitoring-tabs" role="tablist" aria-label="Product monitoring">
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        const active = activeTab === tab.key;
-        const isDanger = dangerStates[tab.key];
-        return (
-          <button
-            key={tab.key}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            className={`monitoring-tab ${active ? 'active' : ''}`}
-            onClick={() => onChange(tab.key)}
-          >
-            {typeof Icon === 'string' ? (
-              <img src={Icon} alt={tab.label} width={16} height={16} style={{ objectFit: 'contain' }} />
-            ) : (
-              <Icon size={16} />
-            )}
-            <span>{tab.label}</span>
-            {isDanger && <span className="tab-danger-dot" title="DANGER DETECTED" />}
-          </button>
-        );
-      })}
+    <div className="monitoring-tabs-wrapper">
+      <div
+        ref={containerRef}
+        className="monitoring-tabs"
+        role="tablist"
+        aria-label="Product monitoring"
+      >
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.key;
+          const isDanger = dangerStates[tab.key];
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={`monitoring-tab ${active ? 'active' : ''}`}
+              onClick={() => onChange(tab.key)}
+            >
+              {typeof Icon === 'string' ? (
+                <img src={Icon} alt={tab.label} width={16} height={16} style={{ objectFit: 'contain' }} />
+              ) : (
+                <Icon size={16} />
+              )}
+              <span>{tab.label}</span>
+              {isDanger && <span className="tab-danger-dot" title="DANGER DETECTED" />}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

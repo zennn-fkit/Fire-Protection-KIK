@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Waves, Ruler } from 'lucide-react';
 import Wave from 'react-wavify';
 import HydrantTankStrip from './HydrantTankStrip';
+import { useTankConfig } from '../../hooks/useTankConfig';
 
 function getLevelColor(level, maxLevel) {
   const pct = level / maxLevel;
@@ -28,6 +29,7 @@ export default function UltrasonicSensorCard({
   embedded = false,
   hideLogo = false,
 }) {
+  const { calcLiters } = useTankConfig();
   const resolvedVariant = variant || (compact ? 'compact' : 'default');
   const isMinimal = resolvedVariant === 'minimal';
 
@@ -53,6 +55,9 @@ export default function UltrasonicSensorCard({
   const TANK_H = isCompact ? 120 : (isMinimal ? 160 : 180);
   const TANK_W = isCompact ? 64 : (isMinimal ? 120 : 90);
   const fillH = TANK_H * levelPct;
+
+  const currentLiters = calcLiters(distanceCm, levelPct);
+
 
   // Ruler tick marks
   const ticks = useMemo(() => {
@@ -238,14 +243,14 @@ export default function UltrasonicSensorCard({
                   fontSize: isMinimal ? 28 : 22, color: '#fff',
                   textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.3)',
                 }}>
-                  {isMinimal ? (levelPct * 100).toFixed(1) : clampedLevel.toFixed(1)}
+                  {isMinimal ? currentLiters : clampedLevel.toFixed(1)}
                 </span>
                 <span style={{
                   fontSize: isMinimal ? 12 : 10, color: 'rgba(255,255,255,0.8)', fontWeight: 600,
                   letterSpacing: isMinimal ? '0.1em' : '0.05em',
                   textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                 }}>
-                  {isMinimal ? '%' : 'cm'}
+                  {isMinimal ? 'L' : 'cm'}
                 </span>
               </div>
             </div>
