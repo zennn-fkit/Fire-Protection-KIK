@@ -33,7 +33,7 @@ const NAV = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/monitoring', icon: Monitor, label: 'Monitoring' },
   { to: '/history', icon: History, label: 'Riwayat' },
-  { to: '/sensors', icon: SensorIcon, label: 'Sensor' },
+  // { to: '/sensors', icon: SensorIcon, label: 'Sensor' },
 ];
 
 export default function BottomNavigation() {

@@ -37,7 +37,7 @@ const NAV = [
   { to: '/monitoring', icon: Monitor, label: 'Monitoring' },
   { to: '/history', icon: History, label: 'Riwayat Data' },
   // { to: '/control', icon: Sliders, label: 'Kontrol' },
-  { to: '/sensors', icon: SensorIcon, label: 'Manajemen Sensor' },
+  // { to: '/sensors', icon: SensorIcon, label: 'Manajemen Sensor' },
 ];
 
 export default function Sidebar({ isOpen, onToggle }) {
