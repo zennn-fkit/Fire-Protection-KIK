@@ -12,38 +12,61 @@ router.post('/data', async (req, res) => {
 
     const {
       node_id,
-      voltage, current_amp, frequency, power_kw,
-      temperature, humidity,
-      pressure, valve_status,
+      voltage, current_amp, frequency, power_kw, power_watt, energy_kwh,
+      temperature, temperature_sht, humidity, thermal_temp, co2_ppm, uv_value,
+      pressure, gas_pressure, valve_status, gas_valve_status,
+      water_pressure, water_valve_status,
       smoke_status, flame_status, heat_status, thermal_status,
-      water_level,
+      water_level, state_smoke, thermal_pixels
     } = data;
+
+    const final_power_kw = power_watt != null ? power_watt / 1000 : (power_kw ?? null);
+    const final_temp = temperature_sht ?? temperature ?? null;
+    const final_pressure = gas_pressure ?? pressure ?? null;
+    const final_valve = gas_valve_status ?? water_valve_status ?? valve_status ?? null;
+    const final_smoke_status =
+      (node_id === 2 && state_smoke !== undefined)
+        ? (Number(state_smoke) === 1 ? 'DANGER' : 'NORMAL')
+        : (smoke_status ?? 'NORMAL');
+
+    // Hitung suhu tertinggi dari array thermal_pixels jika tersedia
+    const pixelArray = Array.isArray(thermal_pixels) ? thermal_pixels.map(Number).filter(n => !isNaN(n)) : [];
+    const maxFromPixels = pixelArray.length === 64 ? Math.max(...pixelArray) : null;
+    const final_thermal = maxFromPixels ?? thermal_temp ?? null;
 
     if (!node_id) return res.status(400).json({ error: 'node_id is required' });
 
     // Insert reading
-    const [result] = await pool.execute(
-      `INSERT INTO sensor_readings
-       (node_id, voltage, current_amp, frequency, power_kw, temperature, humidity,
-        pressure, valve_status, smoke_status, flame_status, heat_status, thermal_status, water_level)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        node_id,
-        voltage    ?? null, current_amp  ?? null, frequency ?? null, power_kw  ?? null,
-        temperature ?? null, humidity    ?? null,
-        pressure    ?? null, valve_status ?? null,
-        smoke_status  ?? 'NORMAL', flame_status  ?? 'NORMAL',
-        heat_status   ?? 'NORMAL', thermal_status ?? 'NORMAL',
-        water_level   ?? null,
-      ]
-    );
+    let result;
+    if (node_id === 2) {
+      [result] = await pool.execute(
+        `INSERT INTO sensor_bangunan (node_id, smoke_status) VALUES (?, ?)`,
+        [node_id, final_smoke_status]
+      );
+    } else {
+      [result] = await pool.execute(
+        `INSERT INTO sensor_readings
+         (node_id, voltage, current_amp, frequency, power_kw, energy_kwh, temperature, humidity,
+          pressure, water_pressure, co2_ppm, thermal_temp, uv_value, valve_status, smoke_status, flame_status, heat_status, thermal_status, water_level)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          node_id,
+          voltage    ?? null, current_amp  ?? null, frequency ?? null, final_power_kw, energy_kwh ?? null,
+          final_temp, humidity    ?? null,
+          final_pressure, water_pressure ?? null, co2_ppm ?? null, final_thermal, uv_value ?? null, final_valve,
+          final_smoke_status, flame_status  ?? 'NORMAL',
+          heat_status   ?? 'NORMAL', thermal_status ?? 'NORMAL',
+          water_level   ?? null,
+        ]
+      );
+    }
 
     // Get current actuator states
     const [states] = await pool.execute('SELECT device, status FROM actuator_state');
     const currentStates = Object.fromEntries(states.map(s => [s.device, s.status]));
 
     // Evaluate auto-control
-    const { actions, alerts } = evaluateAutoControl(data, currentStates);
+    const { actions, alerts } = evaluateAutoControl({ ...data, smoke_status: final_smoke_status }, currentStates);
 
     // Apply auto actions
     for (const action of actions) {
@@ -71,6 +94,9 @@ router.post('/data', async (req, res) => {
       const [updatedStates] = await pool.execute('SELECT device, status FROM actuator_state');
       io.emit('sensor:update', {
         ...data,
+        smoke_status: final_smoke_status,
+        thermal_temp: final_thermal,
+        thermal_pixels: thermal_pixels ?? null,
         id: result.insertId,
         timestamp: new Date(),
         actuators: Object.fromEntries(updatedStates.map(s => [s.device, s.status])),
@@ -98,6 +124,43 @@ router.get('/latest', async (req, res) => {
       ) latest ON r.node_id = latest.node_id AND r.id = latest.max_id
       ORDER BY r.node_id
     `);
+
+    // Fetch node 2 latest reading from sensor_bangunan
+    const [bRows] = await pool.execute(
+      `SELECT id, created_at as timestamp, node_id, smoke_status FROM sensor_bangunan ORDER BY id DESC LIMIT 1`
+    );
+    if (bRows.length > 0) {
+      const node2Row = {
+        id: bRows[0].id,
+        timestamp: bRows[0].timestamp,
+        node_id: 2,
+        voltage: null,
+        current_amp: null,
+        frequency: null,
+        power_kw: null,
+        energy_kwh: null,
+        temperature: null,
+        humidity: null,
+        pressure: null,
+        water_pressure: null,
+        co2_ppm: null,
+        thermal_temp: null,
+        uv_value: null,
+        smoke_status: bRows[0].smoke_status,
+        flame_status: 'NORMAL',
+        heat_status: 'NORMAL',
+        thermal_status: 'NORMAL',
+        water_level: null,
+        valve_status: 'CLOSED'
+      };
+      const existingIdx = rows.findIndex(r => r.node_id === 2);
+      if (existingIdx !== -1) {
+        rows[existingIdx] = { ...rows[existingIdx], ...node2Row };
+      } else {
+        rows.push(node2Row);
+      }
+      rows.sort((a, b) => a.node_id - b.node_id);
+    }
 
     const [states] = await pool.execute('SELECT device, status, last_updated, triggered_by FROM actuator_state');
     const [waterRows] = await pool.execute(

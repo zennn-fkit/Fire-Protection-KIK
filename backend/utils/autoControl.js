@@ -4,11 +4,11 @@
 // ============================================================
 
 export const THRESHOLDS = {
-  temperature: { warning: 40, danger: 60 },      // °C
-  humidity:    { low: 20, high: 80 },             // %RH
-  pressure:    { dangerLow: 2, warningLow: 4 },   // Bar
-  voltage:     { low: 200, high: 240 },            // V
-  water_level: { low: 20 },                        // %
+  temperature: { warning: 80, danger: 100 },      // °C
+  humidity: { low: 20, high: 80 },             // %RH
+  pressure: { dangerLow: 6, warningLow: 10 },   // Bar
+  voltage: { low: 180, high: 260 },            // V
+  water_level: { low: 30 },                        // %
 };
 
 /**
@@ -19,13 +19,13 @@ export const THRESHOLDS = {
  */
 export function evaluateAutoControl(data, currentStates) {
   const actions = [];
-  const alerts  = [];
+  const alerts = [];
 
   // --- FIRE/SMOKE DETECTION ---
   const fireDanger =
-    data.smoke_status  === 'DANGER' ||
-    data.flame_status  === 'DANGER' ||
-    data.heat_status   === 'DANGER' ||
+    data.smoke_status === 'DANGER' ||
+    data.flame_status === 'DANGER' ||
+    data.heat_status === 'DANGER' ||
     data.thermal_status === 'DANGER';
 
   if (fireDanger) {
@@ -43,9 +43,9 @@ export function evaluateAutoControl(data, currentStates) {
   }
 
   const fireWarning =
-    data.smoke_status   === 'WARNING' ||
-    data.flame_status   === 'WARNING' ||
-    data.heat_status    === 'WARNING' ||
+    data.smoke_status === 'WARNING' ||
+    data.flame_status === 'WARNING' ||
+    data.heat_status === 'WARNING' ||
     data.thermal_status === 'WARNING';
 
   if (fireWarning && !fireDanger) {
@@ -108,13 +108,23 @@ export function evaluateAutoControl(data, currentStates) {
   }
 
   // --- VOLTAGE ---
-  if (data.voltage != null) {
-    if (data.voltage < THRESHOLDS.voltage.low || data.voltage > THRESHOLDS.voltage.high) {
+  // Menggunakan ac_voltage dari sensor PZEM (atau voltage sebagai fallback jika masih ada mock data)
+  const currentVoltage = data.ac_voltage != null ? data.ac_voltage : data.voltage;
+
+  if (currentVoltage != null) {
+    if (currentVoltage === 0) {
+      alerts.push({
+        alert_type: 'POWER_OUTAGE',
+        severity: 'CRITICAL',
+        message: `MATI LISTRIK! Tegangan terdeteksi 0V`,
+        value: currentVoltage, unit: 'V',
+      });
+    } else if (currentVoltage < THRESHOLDS.voltage.low || currentVoltage > THRESHOLDS.voltage.high) {
       alerts.push({
         alert_type: 'VOLTAGE_ABNORMAL',
         severity: 'WARNING',
-        message: `Tegangan abnormal: ${data.voltage}V (Normal: 200–240V)`,
-        value: data.voltage, unit: 'V',
+        message: `Tegangan abnormal: ${currentVoltage}V (Normal: ${THRESHOLDS.voltage.low}–${THRESHOLDS.voltage.high}V)`,
+        value: currentVoltage, unit: 'V',
       });
     }
   }

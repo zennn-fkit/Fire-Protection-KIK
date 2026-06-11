@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Droplets, Bell, Waves, Power, Clock, User } from 'lucide-react';
 import { useSensor } from '../context/SensorContext';
 import { getControl, postControl } from '../utils/api';
 import Header from '../components/layout/Header';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const DEVICES = [
   {
@@ -37,7 +38,7 @@ const DEVICES = [
 
 function ControlCard({ device, currentStatus, onToggle, loading, logs }) {
   const { key, label, icon: Icon, color, onStatus, offStatus, onLabel, offLabel, desc } = device;
-  const isOn     = currentStatus === onStatus;
+  const isOn = currentStatus === onStatus;
   const lastLogs = (logs || []).filter(l => l.device === key).slice(0, 4);
 
   return (
@@ -146,7 +147,7 @@ function ControlCard({ device, currentStatus, onToggle, loading, logs }) {
 
 export default function Control() {
   const { state, controlUpdate } = useSensor();
-  const [logs,    setLogs]    = useState([]);
+  const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState({});
 
   useEffect(() => {
@@ -157,9 +158,9 @@ export default function Control() {
       .catch(() => {
         // Demo logs
         setLogs([
-          { device: 'SPRINKLER', status: 'OFF',    triggered_by: 'MANUAL', timestamp: new Date(Date.now()-3600000) },
-          { device: 'ALARM',     status: 'OFF',    triggered_by: 'AUTO',   timestamp: new Date(Date.now()-7200000) },
-          { device: 'VALVE',     status: 'CLOSED', triggered_by: 'MANUAL', timestamp: new Date(Date.now()-1800000) },
+          { device: 'SPRINKLER', status: 'OFF', triggered_by: 'MANUAL', timestamp: new Date(Date.now() - 3600000) },
+          { device: 'ALARM', status: 'OFF', triggered_by: 'AUTO', timestamp: new Date(Date.now() - 7200000) },
+          { device: 'VALVE', status: 'CLOSED', triggered_by: 'MANUAL', timestamp: new Date(Date.now() - 1800000) },
         ]);
       });
   }, []);
@@ -188,29 +189,45 @@ export default function Control() {
       <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Info Banner */}
-        <div style={{ padding: '12px 16px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          style={{ padding: '12px 16px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
           <Bell size={16} color="#60a5fa" />
           <span style={{ fontSize: 12, color: '#94a3b8' }}>
             Kontrol manual dapat menimpa kontrol otomatis. Sistem akan otomatis mengaktifkan aktuator saat sensor mendeteksi bahaya.
           </span>
-        </div>
+        </motion.div>
 
         {/* Control Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-          {DEVICES.map(device => (
-            <ControlCard
+          {DEVICES.map((device, index) => (
+            <motion.div
               key={device.key}
-              device={device}
-              currentStatus={state.actuators[device.key]}
-              onToggle={handleToggle}
-              loading={loading[device.key]}
-              logs={logs}
-            />
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <ControlCard
+                device={device}
+                currentStatus={state.actuators[device.key]}
+                onToggle={handleToggle}
+                loading={loading[device.key]}
+                logs={logs}
+              />
+            </motion.div>
           ))}
         </div>
 
         {/* Full Activity Log */}
-        <div className="card">
+        <motion.div
+          className="card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <Clock size={16} color="#64748b" />
             <span style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>Log Aktivitas Kontrol</span>
@@ -231,7 +248,7 @@ export default function Control() {
                     <td style={{ color: '#e2e8f0', fontWeight: 600 }}>{log.device}</td>
                     <td>
                       <span style={{
-                        color: ['ON','OPEN'].includes(log.status) ? '#10b981' : '#ef4444',
+                        color: ['ON', 'OPEN'].includes(log.status) ? '#10b981' : '#ef4444',
                         fontWeight: 700,
                       }}>{log.status}</span>
                     </td>
@@ -250,7 +267,7 @@ export default function Control() {
               </tbody>
             </table>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

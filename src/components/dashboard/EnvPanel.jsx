@@ -3,7 +3,7 @@ import { getStatus, STATUS_COLORS } from '../../utils/thresholds';
 
 function EnvMetric({ icon: Icon, label, value, unit, threshKey, color }) {
   const status = getStatus(threshKey, value);
-  const sc     = STATUS_COLORS[status];
+  const sc = STATUS_COLORS[status];
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
@@ -57,3 +57,4 @@ export default function EnvPanel({ nodes, title, style }) {
     </div>
   );
 }
+

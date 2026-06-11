@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    allowedHosts: ['dashboard.tyhomes.my.id']
+  },
   build: {
     chunkSizeWarningLimit: 1600,
     rollupOptions: {

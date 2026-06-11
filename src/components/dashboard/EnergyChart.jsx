@@ -1,16 +1,37 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from 'recharts';
 
 const METRICS = [
-  { id: 'kw', label: 'Daya', unit: 'kW', color: '#f97316' },
+  { id: 'watt', label: 'Daya', unit: 'Watt', color: '#f97316' },
   { id: 'voltage', label: 'Tegangan', unit: 'V', color: '#3b82f6' },
   { id: 'amp', label: 'Arus', unit: 'A', color: '#c87941' },
   { id: 'hz', label: 'Frekuensi', unit: 'Hz', color: '#2a9d8f' },
 ];
+
+const METRIC_CONFIG = {
+  watt: [
+    { key: 'watt_r', label: 'Fasa R', color: '#EF4444' },
+    { key: 'watt_s', label: 'Fasa S', color: '#FBBF24' },
+    { key: 'watt_t', label: 'Fasa T', color: '#06B6D4' },
+  ],
+  voltage: [
+    { key: 'voltage_r', label: 'Fasa R', color: '#EF4444' },
+    { key: 'voltage_s', label: 'Fasa S', color: '#FBBF24' },
+    { key: 'voltage_t', label: 'Fasa T', color: '#06B6D4' },
+  ],
+  amp: [
+    { key: 'amp_r', label: 'Fasa R', color: '#EF4444' },
+    { key: 'amp_s', label: 'Fasa S', color: '#FBBF24' },
+    { key: 'amp_t', label: 'Fasa T', color: '#06B6D4' },
+  ],
+  hz: [
+    { key: 'hz', label: 'Frekuensi', color: '#10B981' },
+  ],
+};
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -26,8 +47,14 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function EnergyChart({ data, title = 'Tren Realtime', initialMetric = 'kw' }) {
-  const [selectedId, setSelectedId] = useState(initialMetric);
+export default function EnergyChart({
+  data,
+  title = 'Tren Realtime',
+  initialMetric = 'watt',
+  embedded = false,
+  chartHeight = 120,
+}) {
+  const [selectedId, setSelectedId] = useState(initialMetric === 'kw' ? 'watt' : initialMetric);
   const [isOpen, setIsOpen] = useState(false);
   const activeMetric = METRICS.find(m => m.id === selectedId) || METRICS[0];
   const dropdownRef = useRef(null);
@@ -42,13 +69,13 @@ export default function EnergyChart({ data, title = 'Tren Realtime', initialMetr
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  return (
-    <div className="card" style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+  const chartBody = (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: embedded ? 8 : 12 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8' }}>
           {title} ({activeMetric.label})
         </div>
-        
+
         {/* Menu Pilihan Grafik (Dropdown) */}
         <div style={{ position: 'relative' }} ref={dropdownRef}>
           <button
@@ -111,34 +138,45 @@ export default function EnergyChart({ data, title = 'Tren Realtime', initialMetr
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={120}>
-        <AreaChart data={data} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
-          <defs>
-            <linearGradient id={`colorMetric-${activeMetric.id}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={activeMetric.color} stopOpacity={0.5}/>
-              <stop offset="95%" stopColor={activeMetric.color} stopOpacity={0}/>
-            </linearGradient>
-          </defs>
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <LineChart data={data} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#1a3558" />
           <XAxis
             dataKey="time" tick={{ fill: '#475569', fontSize: 9 }}
             interval="preserveStartEnd" tickLine={false} axisLine={{ stroke: '#1a3558' }}
           />
-          <YAxis 
+          <YAxis
             domain={['auto', 'auto']}
-            tick={{ fill: '#475569', fontSize: 9 }} tickLine={false} axisLine={false} 
+            tick={{ fill: '#475569', fontSize: 9 }} tickLine={false} axisLine={false}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Area
-            type="monotone" dataKey={activeMetric.id} stroke={activeMetric.color} strokeWidth={2}
-            fillOpacity={1} fill={`url(#colorMetric-${activeMetric.id})`}
-            dot={false} activeDot={{ r: 4, fill: activeMetric.color }}
-            name={activeMetric.label} unit={` ${activeMetric.unit}`}
-            style={{ filter: `drop-shadow(0 0 2px ${activeMetric.color}80)` }}
-            isAnimationActive={false}
-          />
-        </AreaChart>
+          {(METRIC_CONFIG[selectedId] || METRIC_CONFIG.watt).map((cfg) => (
+            <Line
+              key={cfg.key}
+              type="monotone"
+              dataKey={cfg.key}
+              stroke={cfg.color}
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4, fill: cfg.color }}
+              name={cfg.label}
+              unit={` ${activeMetric.unit}`}
+              style={{ filter: `drop-shadow(0 0 2px ${cfg.color}80)` }}
+              isAnimationActive={false}
+            />
+          ))}
+        </LineChart>
       </ResponsiveContainer>
+    </>
+  );
+
+  if (embedded) {
+    return <div style={{ flex: 1, minWidth: 0 }}>{chartBody}</div>;
+  }
+
+  return (
+    <div className="card" style={{ flex: 1, minWidth: 0 }}>
+      {chartBody}
     </div>
   );
 }

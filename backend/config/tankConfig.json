@@ -1,0 +1,11 @@
+{
+  "shape": "rectangle",
+  "maxDistanceCm": 250,
+  "cylinder": {
+    "diameterCm": 120
+  },
+  "rectangle": {
+    "lengthCm": 100,
+    "widthCm": 50
+  }
+}

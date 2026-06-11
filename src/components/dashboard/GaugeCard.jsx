@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { getStatus, STATUS_COLORS } from '../../utils/thresholds';
 
 const CX = 100, CY = 100;
@@ -17,12 +17,34 @@ function arcD(r, startDeg, endDeg) {
   return `M ${sx} ${sy} A ${r} ${r} 0 ${large} 1 ${ex} ${ey}`;
 }
 
+/**
+ * Komponen kartu presentasi visual pengukur radial (Gauge Card).
+ * 
+ * @component
+ * @param {object} props
+ * @param {string} props.label - Nama atau judul data sensor (misal: "Tegangan").
+ * @param {number} props.value - Nilai aktual sensor yang diukur.
+ * @param {string|number} [props.displayValue] - Nilai yang diformat khusus untuk ditampilkan di dalam gauge.
+ * @param {number} [props.min=0] - Nilai minimum skala gauge.
+ * @param {number} [props.max=100] - Nilai maksimum skala gauge.
+ * @param {string} props.unit - Satuan metrik sensor (misal: "Volt AC", "kWh").
+ * @param {string} [props.threshKey] - Kunci pencocokan batas toleransi bahaya di file thresholds.js.
+ * @param {number} [props.decimals=1] - Jumlah desimal pembulatan angka display.
+ * @param {boolean} [props.showReset=false] - Menampilkan tombol reset di bagian bawah (khusus meteran energi).
+ * @param {Function} [props.onReset] - Fungsi callback saat tombol reset diklik.
+ * @param {React.ComponentType} [props.icon] - Ikon dari lucide-react untuk dipasang di judul kartu.
+ */
 export default function GaugeCard({
-  label, value, min = 0, max = 100, unit,
-  threshKey, decimals = 1
+  label, value, displayValue, min = 0, max = 100, unit,
+  threshKey, decimals = 1,
+  showReset = false, onReset,
+  icon: Icon,
+  blockedMessage,
 }) {
+  const [hovered, setHovered] = useState(false);
   const status = threshKey ? getStatus(threshKey, value) : 'normal';
-  const sc = STATUS_COLORS[status];
+  const baseSc = STATUS_COLORS[status] || STATUS_COLORS.normal || { stroke: '#3b82f6', bg: 'rgba(59,130,246,0.1)', label: 'NORMAL' };
+  const sc = blockedMessage ? { stroke: '#475569', bg: 'rgba(71, 85, 105, 0.12)', label: 'BLOCKED' } : baseSc;
   const pct = Math.max(0, Math.min(1, (value - min) / (max - min)));
   const id = `gauge-${(label + unit).replace(/[^a-zA-Z0-9]/g, '')}`;
 
@@ -43,18 +65,57 @@ export default function GaugeCard({
   }, []);
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '12px 12px', flex: 1, minHeight: 160 }}>
+    <div
+      className="card"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 12px',
+        height: '100%',
+        minHeight: 160,
+        transition: 'border-color 0.3s, box-shadow 0.3s',
+        ...(hovered ? {
+          borderColor: sc.stroke,
+          boxShadow: `0 8px 32px rgba(0, 0, 0, 0.45), 0 0 16px ${sc.stroke}35`,
+        } : {})
+      }}
+    >
+      {blockedMessage && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 50,
+          background: 'rgba(10, 22, 40, 0.6)',
+          backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: 'inherit'
+        }}>
+          <div style={{
+            padding: '8px 16px', borderRadius: 999, border: '1px solid rgba(245, 158, 11, 0.4)',
+            background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b',
+            fontSize: 10, fontWeight: 800, letterSpacing: '0.05em',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            textAlign: 'center'
+          }}>
+            {blockedMessage}
+          </div>
+        </div>
+      )}
       {/* Title */}
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        {label}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        {Icon && <Icon size={14} color={sc.stroke} style={{ opacity: 0.9 }} />}
+        <span>{label}</span>
       </div>
 
       <div style={{ position: 'relative', marginTop: 10, display: 'flex', justifyContent: 'center' }}>
         <svg width="100%" height="100" viewBox="0 10 200 150" style={{ overflow: 'visible' }}>
           <defs>
             <filter id={`${id}-glow`} x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b" />
+              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
             <linearGradient id={`${id}-grad`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor={sc.stroke} stopOpacity="0.6" />
@@ -76,7 +137,7 @@ export default function GaugeCard({
 
           {/* Active Value Track */}
           {pct > 0.01 && (
-              <path d={arcD(74, START, valueEndDeg)} fill="none"
+            <path d={arcD(74, START, valueEndDeg)} fill="none"
               stroke={`url(#${id}-grad)`} strokeWidth="5"
               strokeLinecap="round"
               filter={`url(#${id}-glow)`}
@@ -94,15 +155,15 @@ export default function GaugeCard({
 
           {/* Value Text */}
           <text x={CX} y={CY + 15} textAnchor="middle" fill="#ffffff"
-            fontSize="24" fontWeight="800" fontFamily="'Inter', sans-serif"
-            style={{ textShadow: `0 0 12px ${sc.stroke}60` }}
+            fontSize={displayValue && typeof displayValue === 'string' && displayValue.length > 8 ? "18" : "24"} fontWeight="800" fontFamily="'JetBrains Mono', monospace"
+            style={{ textShadow: `0 0 12px ${sc.stroke}60`, letterSpacing: '-0.02em' }}
           >
-            {typeof value === 'number' ? value.toFixed(decimals) : value}
+            {displayValue !== undefined ? displayValue : (typeof value === 'number' ? value.toFixed(decimals) : value)}
           </text>
 
           {/* Unit Text */}
           <text x={CX} y={CY + 35} textAnchor="middle" fill="#94a3b8"
-            fontSize="10" fontWeight="600"
+            fontSize="13" fontWeight="600"
           >
             {unit}
           </text>
@@ -110,23 +171,61 @@ export default function GaugeCard({
       </div>
 
       {/* Status Pill */}
-      <div style={{
-        marginTop: 8,
-        padding: '3px 10px',
-        borderRadius: 999,
-        backgroundColor: sc.bg,
-        border: `1px solid ${sc.stroke}40`,
-        color: sc.stroke,
-        fontSize: 9,
-        fontWeight: 700,
-        letterSpacing: '0.05em',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6
-      }}>
-        <div style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: sc.stroke, boxShadow: `0 0 6px ${sc.stroke}` }} />
-        {sc.label.toUpperCase()}
-      </div>
+      {label?.toUpperCase() !== 'ENERGY' && (
+        <div style={{
+          marginTop: 8,
+          padding: '3px 10px',
+          borderRadius: 999,
+          backgroundColor: sc.bg,
+          border: `1px solid ${sc.stroke}40`,
+          color: sc.stroke,
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.05em',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6
+        }}>
+          <div style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: sc.stroke, boxShadow: `0 0 6px ${sc.stroke}` }} />
+          {sc.label.toUpperCase()}
+        </div>
+      )}
+
+      {/* Reset Button (only for Energy gauge) */}
+      {showReset && onReset && (
+        <button
+          onClick={onReset}
+          title="Reset energy meter"
+          style={{
+            marginTop: 8,
+            padding: '4px 12px',
+            borderRadius: 8,
+            background: 'rgba(249,115,22,0.1)',
+            border: '1px solid rgba(249,115,22,0.25)',
+            color: '#fb923c',
+            fontSize: 10,
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            transition: 'all 0.25s ease',
+            letterSpacing: '0.03em',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(249,115,22,0.2)';
+            e.currentTarget.style.borderColor = 'rgba(249,115,22,0.5)';
+            e.currentTarget.style.boxShadow = '0 0 12px rgba(249,115,22,0.2)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(249,115,22,0.1)';
+            e.currentTarget.style.borderColor = 'rgba(249,115,22,0.25)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        >
+          🔄 RESET
+        </button>
+      )}
     </div>
   );
 }
