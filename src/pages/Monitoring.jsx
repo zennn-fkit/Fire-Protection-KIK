@@ -377,6 +377,7 @@ function DistributionView({ panelData }) {
       <div className="monitoring-sensor-grid">
         <ThermalGradientCard
           temperature={panelData?.thermal_temp}
+          pixels={panelData?.thermal_pixels}
           status="ready"
         />
         {topRowSensors.map((item) => (

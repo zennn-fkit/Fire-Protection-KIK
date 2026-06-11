@@ -17,7 +17,7 @@ router.post('/data', async (req, res) => {
       pressure, gas_pressure, valve_status, gas_valve_status,
       water_pressure, water_valve_status,
       smoke_status, flame_status, heat_status, thermal_status,
-      water_level, state_smoke
+      water_level, state_smoke, thermal_pixels
     } = data;
 
     const final_power_kw = power_watt != null ? power_watt / 1000 : (power_kw ?? null);
@@ -28,6 +28,11 @@ router.post('/data', async (req, res) => {
       (node_id === 2 && state_smoke !== undefined)
         ? (Number(state_smoke) === 1 ? 'DANGER' : 'NORMAL')
         : (smoke_status ?? 'NORMAL');
+
+    // Hitung suhu tertinggi dari array thermal_pixels jika tersedia
+    const pixelArray = Array.isArray(thermal_pixels) ? thermal_pixels.map(Number).filter(n => !isNaN(n)) : [];
+    const maxFromPixels = pixelArray.length === 64 ? Math.max(...pixelArray) : null;
+    const final_thermal = maxFromPixels ?? thermal_temp ?? null;
 
     if (!node_id) return res.status(400).json({ error: 'node_id is required' });
 
@@ -48,7 +53,7 @@ router.post('/data', async (req, res) => {
           node_id,
           voltage    ?? null, current_amp  ?? null, frequency ?? null, final_power_kw, energy_kwh ?? null,
           final_temp, humidity    ?? null,
-          final_pressure, water_pressure ?? null, co2_ppm ?? null, thermal_temp ?? null, uv_value ?? null, final_valve,
+          final_pressure, water_pressure ?? null, co2_ppm ?? null, final_thermal, uv_value ?? null, final_valve,
           final_smoke_status, flame_status  ?? 'NORMAL',
           heat_status   ?? 'NORMAL', thermal_status ?? 'NORMAL',
           water_level   ?? null,
@@ -90,6 +95,8 @@ router.post('/data', async (req, res) => {
       io.emit('sensor:update', {
         ...data,
         smoke_status: final_smoke_status,
+        thermal_temp: final_thermal,
+        thermal_pixels: thermal_pixels ?? null,
         id: result.insertId,
         timestamp: new Date(),
         actuators: Object.fromEntries(updatedStates.map(s => [s.device, s.status])),

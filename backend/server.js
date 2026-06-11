@@ -127,6 +127,7 @@ let latestSensorData = {
   co2_ppm: null,
   max_temp: null,
   thermal_temp: null,
+  thermal_pixels: null,
   uv_detected: null,
   smoke_status: 'NORMAL',
   flame_status: 'NORMAL',
@@ -175,7 +176,7 @@ mqttClient.on('message', async (topic, message) => {
     pressure, gas_pressure, valve_status, gas_valve_status,
     water_pressure, water_valve_status,
     water_level, uv_detected, smoke_status, flame_status, heat_status, thermal_status,
-    ac_voltage, mq7_ppm, max_temp, state_smoke
+    ac_voltage, mq7_ppm, max_temp, state_smoke, thermal_pixels
   } = data; // use raw data from this payload
 
   const final_voltage = voltage ?? ac_voltage ?? null;
@@ -188,7 +189,13 @@ mqttClient.on('message', async (topic, message) => {
   if (final_valve === 'TERTUTUP' || final_valve === 'CLOSED') final_valve = 'CLOSED';
 
   const final_co2 = co2_ppm ?? mq7_ppm ?? null;
-  const final_thermal = thermal_temp ?? max_temp ?? null;
+  
+  // Hitung suhu tertinggi dari array thermal_pixels jika tersedia,
+  // sebagai fallback gunakan thermal_temp atau max_temp
+  const pixelArray = Array.isArray(thermal_pixels) ? thermal_pixels.map(Number).filter(n => !isNaN(n)) : [];
+  const maxFromPixels = pixelArray.length === 64 ? Math.max(...pixelArray) : null;
+  const final_thermal = maxFromPixels ?? thermal_temp ?? max_temp ?? null;
+
   const final_uv = uv_value ?? uv_detected ?? null;
 
   const effectiveSmokeStatus =
@@ -301,6 +308,7 @@ mqttClient.on('message', async (topic, message) => {
     gas_pressure: final_pressure,
     co2_ppm: final_co2,
     thermal_temp: final_thermal,
+    thermal_pixels: thermal_pixels ?? null,
     uv_value: final_uv,
     valve_status: final_valve,
     gas_valve_status: final_valve,

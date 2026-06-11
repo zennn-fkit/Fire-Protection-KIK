@@ -114,6 +114,12 @@ function reducer(state, action) {
         let newUvDetected = hasUvReading ? (d.uv_value ?? d.uv_detected) : 0;
         const explicitFlameStatus = normalizeDetectorStatus(d.flame_status);
 
+        const incomingPixels = d.thermal_pixels;
+        const fallbackPixels = state.panelData?.thermal_pixels ?? Array(64).fill(newThermalTemp ?? 25.0);
+        const finalPixels = (Array.isArray(incomingPixels) && incomingPixels.length === 64)
+          ? incomingPixels
+          : fallbackPixels;
+
         newState.panelData = {
           voltage: isRealACVoltage ? incomingVoltage : (state.panelData?.voltage ?? 220),
           current_amp: d.current_amp ?? (state.panelData?.current_amp ?? 0),
@@ -123,6 +129,7 @@ function reducer(state, action) {
           temperature_sht: d.temperature_sht ?? d.temperature ?? (state.panelData?.temperature_sht ?? 25),
           humidity: d.humidity ?? (state.panelData?.humidity ?? 50),
           thermal_temp: newThermalTemp ?? (state.panelData?.thermal_temp ?? 25),
+          thermal_pixels: finalPixels,
           co2_ppm: newCo2Ppm ?? (state.panelData?.co2_ppm ?? 0),
           uv_value: newUvDetected,
           frequency: d.frequency ?? (state.panelData?.frequency ?? 50),
@@ -244,7 +251,7 @@ function reducer(state, action) {
           // Hanya inisialisasi field yang belum dapat data real
           panelData: isFresh(rts, 'master') ? state.panelData : {
             voltage: 220.5, current_amp: 150.2, power_kw: 1.8, power_watt: 1800, energy_kwh: 1245.5,
-            temperature_sht: 28.35, humidity: 54.2, thermal_temp: 27.2, co2_ppm: 0.014, uv_value: 0,
+            temperature_sht: 28.35, humidity: 54.2, thermal_temp: 27.2, thermal_pixels: Array(64).fill(27.2), co2_ppm: 0.014, uv_value: 0,
           },
           node2: isFresh(rts, 'node2') ? state.node2
             : { gas_pressure: 5.2, gas_valve_status: 'CLOSED', smoke_status: 'NORMAL' },
@@ -301,6 +308,19 @@ function reducer(state, action) {
           amp_r: amp3.r, amp_s: amp3.s, amp_t: amp3.t,
           hz: 50,
         };
+        const tickTime = Date.now() / 8000;
+        const cx = 3.5 + 2.0 * Math.sin(tickTime);
+        const cy = 3.5 + 2.0 * Math.cos(tickTime * 1.3);
+        const mockPixels = Array.from({ length: 64 }, (_, i) => {
+          const px = i % 8;
+          const py = Math.floor(i / 8);
+          const distSq = (px - cx) ** 2 + (py - cy) ** 2;
+          const baseTemp = 25.5 + Math.sin(px * 0.5) * 0.5 + Math.cos(py * 0.5) * 0.5 + (Math.random() - 0.5) * 0.3;
+          const hotspotTemp = 18.0 * Math.exp(-distSq / 3.5);
+          return +(baseTemp + hotspotTemp).toFixed(1);
+        });
+        const maxThermal = Math.max(...mockPixels);
+
         nextState.panelData = {
           voltage: +(state.panelData.voltage + (Math.random() - 0.5) * 1.5).toFixed(1),
           current_amp: +(state.panelData.current_amp + (Math.random() - 0.5) * 2).toFixed(1),
@@ -309,12 +329,20 @@ function reducer(state, action) {
           energy_kwh: +(state.panelData.energy_kwh + 0.01).toFixed(2),
           temperature_sht: +(state.panelData.temperature_sht + (Math.random() - 0.5) * 0.1).toFixed(2),
           humidity: +(state.panelData.humidity + (Math.random() - 0.5) * 0.5).toFixed(1),
-          thermal_temp: +(state.panelData.thermal_temp + (Math.random() - 0.5) * 0.1).toFixed(1),
+          thermal_temp: +maxThermal.toFixed(1),
+          thermal_pixels: mockPixels,
           co2_ppm: +(Math.max(0, state.panelData.co2_ppm + (Math.random() - 0.5) * 0.002)).toFixed(3),
           uv_value: Math.random() > 0.95
             ? (state.panelData.uv_value === 1 ? 0 : 1)
             : state.panelData.uv_value,
         };
+
+        if (!isFresh(rts, 'detectors') && state.detectors) {
+          nextState.detectors = {
+            ...state.detectors,
+            thermal: thresholdStatus(maxThermal, FIRE_TEMP_WARNING, FIRE_TEMP_DANGER),
+          };
+        }
         nextState.energyHistory = [...state.energyHistory.slice(-29), newPoint];
       }
 
