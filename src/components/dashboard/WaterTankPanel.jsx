@@ -5,7 +5,7 @@ import { useTankConfig } from '../../hooks/useTankConfig';
 export default function WaterTankPanel({ level, pressure, distanceCm, isReady = true }) {
   const { calcLiters } = useTankConfig();
   const displayLevel = (level !== undefined && level !== null) ? Number(level) : 78;
-  const displayPressure = (pressure !== undefined && pressure !== null) ? Number(pressure) : 5.31;
+  const displayPressure = (pressure !== undefined && pressure !== null) ? Number(pressure) : 30;
   const currentLiters = calcLiters(distanceCm, displayLevel / 100);
 
 
@@ -276,7 +276,7 @@ export default function WaterTankPanel({ level, pressure, distanceCm, isReady = 
               <span style={{ fontSize: '26px', color: '#ffffff', fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
                 {displayPressure.toFixed(2)}
               </span>
-              <span style={{ fontSize: '13px', color: '#475569', marginLeft: '4px', fontWeight: 600 }}>Bar</span>
+              <span style={{ fontSize: '13px', color: '#475569', marginLeft: '4px', fontWeight: 600 }}>psi</span>
             </div>
           </div>
         </div>

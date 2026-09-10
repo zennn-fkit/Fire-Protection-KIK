@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import hydrantSvg from '../../assets/hydrant.svg';
+import { PRESSURE_DANGER_PSI, PRESSURE_WARNING_PSI } from '../../utils/units';
 
 const CX = 75, CY = 75;
 const START = 140, SWEEP = 260;
@@ -22,10 +23,15 @@ const VALVE_STATUS = {
   CLOSED: { color: '#f87171', label: 'TERTUTUP', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.3)' },
 };
 
-export default function HydrantPanel({ pressure = 0, valve_status = 'CLOSED', maxPressure = 12 }) {
+export default function HydrantPanel({ pressure = 0, valve_status = 'CLOSED', maxPressure = 100 }) {
   const vs  = VALVE_STATUS[valve_status] || VALVE_STATUS.CLOSED;
-  const pct = Math.max(0, Math.min(1, pressure / maxPressure));
-  const pressColor = pressure < 2 ? '#f87171' : pressure < 4 ? '#f59e0b' : '#10b981';
+  const pressurePsi = Number(pressure) || 0;
+  const maxPressurePsi = Number(maxPressure) || 100;
+  const pct = Math.max(0, Math.min(1, pressurePsi / maxPressurePsi));
+  const pressColor =
+    pressurePsi >= PRESSURE_DANGER_PSI ? '#f87171'
+    : pressurePsi >= PRESSURE_WARNING_PSI ? '#f59e0b'
+    : '#10b981';
 
   const valueEndDeg = START + pct * SWEEP;
   const [dotX, dotY] = ptc(CX, CY, 54, valueEndDeg);
@@ -125,14 +131,14 @@ export default function HydrantPanel({ pressure = 0, valve_status = 'CLOSED', ma
                 fontSize="18" fontWeight="800" fontFamily="'Inter', sans-serif"
                 style={{ textShadow: `0 0 10px ${pressColor}60` }}
               >
-                {pressure.toFixed(1)}
+                {pressurePsi.toFixed(1)}
               </text>
 
               {/* Unit Text */}
               <text x={CX} y={CY + 28} textAnchor="middle" fill="#94a3b8"
                 fontSize="8" fontWeight="600"
               >
-                Bar
+                psi
               </text>
             </svg>
           </div>
@@ -153,7 +159,7 @@ export default function HydrantPanel({ pressure = 0, valve_status = 'CLOSED', ma
             gap: 5
           }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: pressColor, boxShadow: `0 0 6px ${pressColor}` }} />
-            {pressure < 2 ? 'BAHAYA' : pressure < 4 ? 'WASPADA' : 'NORMAL'}
+            {pressurePsi >= PRESSURE_DANGER_PSI ? 'BAHAYA' : pressurePsi >= PRESSURE_WARNING_PSI ? 'WASPADA' : 'NORMAL'}
           </div>
         </div>
 

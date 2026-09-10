@@ -25,6 +25,7 @@ import ThermalGradientCard from '../components/dashboard/ThermalGradientCard';
 import WaterTankPanel from '../components/dashboard/WaterTankPanel';
 import TankConfigPanel from '../components/dashboard/TankConfigPanel';
 import { ZONE_DEFAULT, ZONE_VOLTAGE } from '../utils/gaugeZones';
+import { PRESSURE_DANGER_PSI } from '../utils/units';
 
 const tabVariants = {
   initial: { opacity: 0, y: 10 },
@@ -250,7 +251,7 @@ function HydrantView({ node3, waterPressure, waterLevel, waterDistance }) {
         <HydrantPanel
           pressure={node3?.water_pressure ?? pressure}
           valve_status={valveStatus}
-          maxPressure={12}
+          maxPressure={100}
         />
 
       </div>
@@ -433,7 +434,7 @@ function BuildingView({ detectors, node2 }) {
 function SmargasView({ node2 }) {
   const gasPressure = node2?.gas_pressure ?? 0;
   const valveStatus = node2?.gas_valve_status ?? 'CLOSED';
-  const isDanger = gasPressure > 8;
+  const isDanger = gasPressure >= PRESSURE_DANGER_PSI;
 
   return (
     <motion.div key="smargas" variants={tabVariants} initial="initial" animate="animate" exit="exit">
@@ -446,13 +447,13 @@ function SmargasView({ node2 }) {
         <GasPanel
           pressure={gasPressure}
           valve_status={valveStatus}
-          maxPressure={10}
+          maxPressure={100}
         />
         <StatusCard
           icon={Wind}
           title="Sensor Gas"
           value={formatNumber(gasPressure, 2)}
-          unit="Bar"
+          unit="psi"
           status="ready"
           note="Tekanan gas utama termonitor."
           color={isDanger ? '#ef4444' : '#10b981'}
@@ -471,10 +472,10 @@ export default function Monitoring() {
     return {
       distribution: panelData?.uv_value === 1 || panelData?.thermal_temp >= 60 || panelData?.temperature_sht >= 60,
       building: (node2?.smoke_status ?? detectors?.smoke) === 'DANGER' || detectors?.heat === 'DANGER',
-      hydrant: false,
-      smargas: (node2?.gas_pressure ?? 0) > 8,
+      hydrant: (node3?.water_pressure ?? water_pressure ?? 0) >= PRESSURE_DANGER_PSI,
+      smargas: (node2?.gas_pressure ?? 0) >= PRESSURE_DANGER_PSI,
     };
-  }, [panelData, detectors, node2]);
+  }, [panelData, detectors, node2, node3, water_pressure]);
 
   const activeView = useMemo(() => {
     if (activeTab === 'distribution') {

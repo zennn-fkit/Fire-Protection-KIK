@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import smargasSvg from '../../assets/smartgas.svg';
+import { PRESSURE_DANGER_PSI, PRESSURE_WARNING_PSI } from '../../utils/units';
 
 const CX = 75, CY = 75;
 const START = 140, SWEEP = 260;
@@ -26,18 +27,22 @@ export default function GasPanel({
   title = "Smart Gas Monitoring",
   pressure = 0,
   valve_status = 'CLOSED',
-  maxPressure = 400,
+  maxPressure = 100,
   iconColor = "#10b981", // Emerald
   valveLabel = "Status Katup"
 }) {
   const vs = VALVE_STATUS[valve_status] || VALVE_STATUS.CLOSED;
-  // For negative values or high pressure, we need a scale. The mock data in image is -302 Bar. Let's just map it generically.
-  // We'll assume the pressure is absolute value for the gauge filling, but displayed as is.
-  const absPressure = Math.abs(pressure);
-  const pct = Math.max(0, Math.min(1, absPressure / maxPressure));
+  // Nilai sensor dari ESP sudah dalam psi.
+  const pressurePsi = Number(pressure) || 0;
+  const absPressurePsi = Math.abs(pressurePsi);
+  const maxPressurePsi = Number(maxPressure) || 100;
+  const pct = Math.max(0, Math.min(1, absPressurePsi / maxPressurePsi));
 
-  // Color scale for gas: green -> orange -> red based on pct
-  const pressColor = pct > 0.8 ? '#f87171' : pct > 0.5 ? '#f59e0b' : '#10b981';
+  // Skala warna gas: hijau -> oranye -> merah berdasarkan ambang psi
+  const pressColor =
+    absPressurePsi >= PRESSURE_DANGER_PSI ? '#f87171'
+    : absPressurePsi >= PRESSURE_WARNING_PSI ? '#f59e0b'
+    : '#10b981';
 
   const valueEndDeg = START + pct * SWEEP;
   const [dotX, dotY] = ptc(CX, CY, 54, valueEndDeg);
@@ -137,14 +142,14 @@ export default function GasPanel({
                 fontSize="18" fontWeight="800" fontFamily="'Inter', sans-serif"
                 style={{ textShadow: `0 0 10px ${pressColor}60` }}
               >
-                {pressure}
+                {pressurePsi.toFixed(1)}
               </text>
 
               {/* Unit Text */}
               <text x={CX} y={CY + 28} textAnchor="middle" fill="#94a3b8"
                 fontSize="8" fontWeight="600"
               >
-                Bar
+                psi
               </text>
             </svg>
           </div>
@@ -165,7 +170,7 @@ export default function GasPanel({
             gap: 5
           }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: pressColor, boxShadow: `0 0 6px ${pressColor}` }} />
-            {pct > 0.8 ? 'BAHAYA' : pct > 0.5 ? 'WASPADA' : 'NORMAL'}
+            {absPressurePsi >= PRESSURE_DANGER_PSI ? 'BAHAYA' : absPressurePsi >= PRESSURE_WARNING_PSI ? 'WASPADA' : 'NORMAL'}
           </div>
         </div>
 
