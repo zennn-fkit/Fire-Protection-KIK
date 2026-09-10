@@ -1,15 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getWaterUsageConfig } from '../utils/api';
 
-export function useTankConfig() {
-  const [config, setConfig] = useState({
-    shape: 'cylinder',
-    maxDistanceCm: 200,
-    cylinder: { diameterCm: 120 },
-    rectangle: { lengthCm: 150, widthCm: 100 },
-  });
+export const TANK_CONFIG_EVENT = 'tank-config-updated';
 
-  useEffect(() => {
+const DEFAULT_CONFIG = {
+  shape: 'cylinder',
+  maxDistanceCm: 200,
+  cylinder: { diameterCm: 120 },
+  rectangle: { lengthCm: 150, widthCm: 100 },
+};
+
+export function useTankConfig() {
+  const [config, setConfig] = useState(DEFAULT_CONFIG);
+
+  const loadConfig = useCallback(() => {
     getWaterUsageConfig()
       .then((res) => {
         if (res?.data) {
@@ -20,6 +24,17 @@ export function useTankConfig() {
         console.error('Gagal mengambil konfigurasi tangki:', err);
       });
   }, []);
+
+  useEffect(() => {
+    loadConfig();
+  }, [loadConfig]);
+
+  // Sinkron antar komponen: refresh ulang config setiap kali ada perubahan
+  useEffect(() => {
+    const handler = () => loadConfig();
+    window.addEventListener(TANK_CONFIG_EVENT, handler);
+    return () => window.removeEventListener(TANK_CONFIG_EVENT, handler);
+  }, [loadConfig]);
 
   const calcLiters = (distanceCm, levelPct) => {
     // Prioritaskan jarak sensor (distanceCm) jika valid
@@ -56,5 +71,5 @@ export function useTankConfig() {
     return 0;
   };
 
-  return { config, calcLiters };
+  return { config, calcLiters, refresh: loadConfig };
 }

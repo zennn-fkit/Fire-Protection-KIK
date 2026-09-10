@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Settings, Droplets, RefreshCw, Save, CheckCircle, AlertCircle } from 'lucide-react';
 import { getWaterUsage, getWaterUsageConfig, saveWaterUsageConfig } from '../../utils/api';
+import { TANK_CONFIG_EVENT } from '../../hooks/useTankConfig';
 
 // ── Volume calculator (harus sama dengan backend calcVolume) ──
 function calcVolume(waterLevelCm, config) {
@@ -61,9 +62,14 @@ export default function TankConfigPanel({ waterLevelCm = null, waterDistanceCm =
   const [saveMsg, setSaveMsg]     = useState(null);        // { ok, text }
   const [loading, setLoading]     = useState(false);
 
+  // Derived: ketinggian air (cm) — utamakan jarak sensor ultrasonik jika tersedia
+  const derivedLevelCm = waterLevelCm != null
+    ? waterLevelCm
+    : (form && waterDistanceCm != null ? Math.max(0, form.maxDistanceCm - waterDistanceCm) : null);
+
   // Derived: volume saat ini berdasarkan sensor + config
-  const currentVolume = form && waterLevelCm != null
-    ? calcVolume(waterLevelCm, form)
+  const currentVolume = form && derivedLevelCm != null
+    ? calcVolume(derivedLevelCm, form)
     : null;
 
   // ── Load config & usage ──
@@ -98,6 +104,7 @@ export default function TankConfigPanel({ waterLevelCm = null, waterDistanceCm =
     try {
       await saveWaterUsageConfig(form);
       setConfig(JSON.parse(JSON.stringify(form)));
+      window.dispatchEvent(new Event(TANK_CONFIG_EVENT));
       setSaveMsg({ ok: true, text: 'Konfigurasi berhasil disimpan!' });
     } catch {
       setSaveMsg({ ok: false, text: 'Gagal menyimpan. Cek koneksi backend.' });
@@ -317,7 +324,7 @@ export default function TankConfigPanel({ waterLevelCm = null, waterDistanceCm =
                 {currentVolume != null ? `${currentVolume} m³` : '— m³'}
               </div>
               <div style={{ fontSize: 8, color: '#475569', marginTop: 2 }}>
-                {waterLevelCm != null ? `Ketinggian air: ${waterLevelCm.toFixed(1)} cm` : 'Sensor tidak terkoneksi'}
+                {derivedLevelCm != null ? `Ketinggian air: ${derivedLevelCm.toFixed(1)} cm` : 'Sensor tidak terkoneksi'}
               </div>
             </div>
           </div>

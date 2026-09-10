@@ -23,6 +23,7 @@ import hydrantSvg from '../assets/hydrant.svg';
 import ThermalGradientCard from '../components/dashboard/ThermalGradientCard';
 
 import WaterTankPanel from '../components/dashboard/WaterTankPanel';
+import TankConfigPanel from '../components/dashboard/TankConfigPanel';
 import { ZONE_DEFAULT, ZONE_VOLTAGE } from '../utils/gaugeZones';
 
 const tabVariants = {
@@ -253,6 +254,8 @@ function HydrantView({ node3, waterPressure, waterLevel, waterDistance }) {
         />
 
       </div>
+
+      <TankConfigPanel waterDistanceCm={waterDistance} />
 
       <ProductSummary items={summary} />
 
